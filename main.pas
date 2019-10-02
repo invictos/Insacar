@@ -12,28 +12,46 @@ const
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
 
 
+procedure frame_afficher(var element: T_UI_ELEMENT);
+var i: Integer;
+begin
+		SDL_FillRect(element.surface, NIL, SDL_MapRGB(element.surface^.format, element.couleur[0], element.couleur[1], element.couleur[2]));
+		for i:=0 to element.enfants.taille-1 do
+		begin
+			frame_afficher(element.enfants.t[i]);
+			SDL_BlitSurface(element.enfants.t[i].surface, NIL, element.surface, @element.enfants.t[i].etat);
+		end;
+end;
+
 procedure afficher_hud(var fenetre: T_UI_ELEMENT);
 begin
 end;
+
 procedure afficher_camera(var fenetre: T_UI_ELEMENT);
 begin
+	fenetre.enfants.t[0].etat.x := fenetre.enfants.t[0].physique^.x;
+	fenetre.enfants.t[0].etat.y := fenetre.enfants.t[0].physique^.y;
 end;
+
 procedure course_afficher(var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);
 begin
-		SDL_FillRect(fenetre.surface, NIL, SDL_MapRGB(fenetre.surface^.format, 19, 200, 209));
-		SDL_FillRect(fenetre.enfants.t[0].surface, NIL, SDL_MapRGB(fenetre.enfants.t[0].surface^.format, 255, 0, 0));
-		
-		fenetre.enfants.t[0].etat.x := fenetre.enfants.t[0].physique^.x;
-		fenetre.enfants.t[0].etat.y := fenetre.enfants.t[0].physique^.y;
-		SDL_BlitSurface(fenetre.enfants.t[0].surface, NIL, fenetre.surface, @fenetre.enfants.t[0].etat);
-
+	afficher_camera(fenetre);
+	afficher_hud(fenetre);
 end;
-procedure course_physique(var physique: T_PHYSIQUE_TABLEAU);
+
+procedure course_gameplay(var infoPartie: T_GAMEPLAY);
 begin
-		
-		physique.t[0].dr:=physique.t[0].dr - C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[0].dr;
-		physique.t[0].x:=Round(physique.t[0].x + sin(physique.t[0].a)*physique.t[0].dr);
-		physique.t[0].y:=Round(physique.t[0].y + cos(physique.t[0].a)*physique.t[0].dr);
+end;
+
+procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU);
+var i : Integer;
+begin
+	for i:=0 to physique.taille do
+		begin
+			physique.t[i].dr:=physique.t[i].dr - C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i].dr;
+			physique.t[i].x:=Round(physique.t[i].x + sin(physique.t[i].a)*physique.t[i].dr);
+			physique.t[i].y:=Round(physique.t[i].y + cos(physique.t[i].a)*physique.t[i].dr);
+		end;
 end;
 
 procedure course_user(var physique: T_PHYSIQUE_TABLEAU;var actif: boolean);
@@ -55,10 +73,10 @@ begin
 		
 	if event_clavier[SDLK_RIGHT] = SDL_PRESSED then
 		physique.t[0].a := physique.t[0].a - C_PHYSIQUE_VOITURE_ANGLE;
-		
 
 end;
-procedure course_arrivee(var fenetre: T_UI_ELEMENT);
+
+procedure course_arrivee(var infoPartie; var fenetre: T_UI_ELEMENT);
 begin
 end;
 
@@ -66,36 +84,33 @@ procedure course_depart(var fenetre: T_UI_ELEMENT);
 begin
 end;
 
-procedure partie_course(var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);{Main Loop}
+procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);{Main Loop}
 var actif: boolean;
-	temps_depart,temps_boucle, temps_total, temps_delay: Integer;
+	timer: array[0..2] of Integer; {départ, boucle, delay}
 begin
 	course_depart(fenetre);
+	
 	actif:=true;
 	while actif do
 	begin
-		temps_depart:=SDL_GetTicks();
+		timer[0]:=SDL_GetTicks();
 		
 		course_user(physique, actif);
-
-		course_physique(physique);
-		
+		frame_physique(physique);
+		course_gameplay(infoPartie);
 		course_afficher(physique, fenetre);
 		
+		frame_afficher(fenetre);
 		SDL_Flip(fenetre.surface);
 		
-		temps_boucle := SDL_GetTicks() - temps_depart;
-		
-		temps_delay := Round(1000/C_REFRESHRATE)-temps_boucle;
-		if temps_delay < 0 then temps_delay:=0;
-		SDL_Delay(temps_delay);
-		
-		
-		temps_total:=SDL_GetTicks() - temps_depart;
-		writeln('Took ',temps_boucle, 'ms to render. FPS=', 1000 div temps_total);
+		timer[1] := SDL_GetTicks() - timer[0];
+		timer[2] := Round(1000/C_REFRESHRATE)-timer[1];
+		if timer[2] < 0 then timer[2]:=0;
+		SDL_Delay(timer[2]);
+		writeln('Took ',timer[1], 'ms to render. FPS=', 1000 div (SDL_GetTicks() - timer[0]));
 	end;
 	
-	course_arrivee(fenetre);
+	course_arrivee(infoPartie, fenetre);
 end;
 
 procedure partie_init(infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU;var fenetre: T_UI_ELEMENT);
@@ -126,8 +141,11 @@ begin
 		physique.t[i].dr :=0;
 	end;
 	
-		
-	fenetre.enfants.taille:=10;
+	fenetre.typeE:=couleur;
+	fenetre.couleur[0]:=19;
+	fenetre.couleur[1]:=200;
+	fenetre.couleur[2]:=209;
+	fenetre.enfants.taille:=1;
 	fenetre.enfants.t:=GetMem(fenetre.enfants.taille * SizeOf(T_UI_ELEMENT));
 	for i:=0 to fenetre.enfants.taille do
 	begin
@@ -137,6 +155,12 @@ begin
 		fenetre.enfants.t[i].etat.w := 40;
 		fenetre.enfants.t[i].etat.h := 60;
 		fenetre.enfants.t[i].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[i].etat.w, fenetre.enfants.t[i].etat.h, 32, 0, 0, 0, 0);
+		fenetre.enfants.t[i].typeE := couleur;
+		fenetre.enfants.t[i].couleur[0]:=255;
+		fenetre.enfants.t[i].couleur[1]:=0;
+		fenetre.enfants.t[i].couleur[2]:=0;
+		fenetre.enfants.t[i].valeur:='';
+		fenetre.enfants.t[i].enfants.taille:=0;
 	end;
 end;
 
@@ -146,7 +170,7 @@ var physique : T_PHYSIQUE_TABLEAU;
 begin
 	infoPartie.config := @config;
 	partie_init(infoPartie, physique, fenetre);
-	partie_course(physique, fenetre);
+	partie_course(infoPartie, physique, fenetre);
 end;
 
 procedure jeu_menu(var fenetre: T_UI_ELEMENT);
@@ -163,7 +187,6 @@ procedure score(var fenetre: T_UI_ELEMENT);
 begin
 	
 end;
-
 
 procedure menu(var fenetre: T_UI_ELEMENT);
 begin
@@ -182,7 +205,7 @@ begin
 		else
 		begin
 			writeln('Erreur setVideoMode');
-			end;
+		end;
 	end
 	else
 	begin
@@ -192,6 +215,6 @@ end;
 
 var fenetre : T_UI_ELEMENT;
 begin
-fenetre := lancement();
-menu(fenetre);
+	fenetre := lancement();
+	menu(fenetre);
 end.

@@ -24,7 +24,7 @@ type
 		surface: PSDL_SURFACE;
 		typeE:(image, texte, couleur);
 		valeur: String;
-		couleur: array[1..3] of Byte;
+		couleur: array[0..2] of Byte;
 		physique: ^T_PHYSIQUE_ELEMENT;
 		enfants: T_UI_TABLEAU;
 	end;
