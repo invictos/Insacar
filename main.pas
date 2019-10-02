@@ -32,7 +32,6 @@ procedure course_physique(var physique: T_PHYSIQUE_TABLEAU);
 begin
 		
 		physique.t[0].dr:=physique.t[0].dr - C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[0].dr;
-
 		physique.t[0].x:=Round(physique.t[0].x + sin(physique.t[0].a)*physique.t[0].dr);
 		physique.t[0].y:=Round(physique.t[0].y + cos(physique.t[0].a)*physique.t[0].dr);
 end;
@@ -99,40 +98,65 @@ begin
 	course_arrivee(fenetre);
 end;
 
-procedure partie_init(c: T_GAMEPLAY_CONFIG; var physique: T_PHYSIQUE_TABLEAU;var fenetre: T_UI_ELEMENT);
+procedure partie_init(infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU;var fenetre: T_UI_ELEMENT);
+var i : Byte;
 begin
-	physique.t := GetMem(10*SizeOf(T_PHYSIQUE_ELEMENT));
+	{Gameplay}
+	infoPartie.temps.debut:=0;
+	infoPartie.temps.fin:=0;
+	{Joueurs}
+	if(infoPartie.config^.mode) then
+		infoPartie.joueurs.taille := 1
+	else
+		infoPartie.joueurs.taille := 2;
+	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
 	
-	physique.taille:=physique.taille+1;
-	physique.t[0].x := 0;
-	physique.t[0].y := 0;
-	physique.t[0].dx := 0;
-	physique.t[0].dy := 0;
-	physique.t[0].a := 0;
-	physique.t[0].dr :=0;
+	{Physique // CALCUL NB ELEMENT PHYSIQUE = JOUEURS + AUTRES}
+	physique.taille := infoPartie.joueurs.taille;
+	physique.t := GetMem(physique.taille*SizeOf(T_PHYSIQUE_ELEMENT));
+	for i:=0 to physique.taille do
+	begin
+		physique.t[i].x := 0;
+		physique.t[i].y := 0;
+		physique.t[i].dx := 0;
+		physique.t[i].dy := 0;
+		physique.t[i].a := 0;
+		physique.t[i].da := 0;
+		physique.t[i].r := 0;
+		physique.t[i].dr :=0;
+	end;
 	
-	fenetre.enfants.t:=GetMem(10 * SizeOf(T_UI_ELEMENT));
-	fenetre.enfants.taille:=fenetre.enfants.taille+1;
-	fenetre.enfants.t[0].physique:=@physique.t[0];
-	fenetre.enfants.t[0].etat.x := 0;
-	fenetre.enfants.t[0].etat.y := 0;
-	fenetre.enfants.t[0].etat.w := 40;
-	fenetre.enfants.t[0].etat.h := 60;
-	fenetre.enfants.t[0].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[0].etat.w, fenetre.enfants.t[0].etat.h, 32, 0, 0, 0, 0);
+		
+	fenetre.enfants.taille:=10;
+	fenetre.enfants.t:=GetMem(fenetre.enfants.taille * SizeOf(T_UI_ELEMENT));
+	for i:=0 to fenetre.enfants.taille do
+	begin
+		fenetre.enfants.t[i].physique:=@physique.t[i];
+		fenetre.enfants.t[i].etat.x := 0;
+		fenetre.enfants.t[i].etat.y := 0;
+		fenetre.enfants.t[i].etat.w := 40;
+		fenetre.enfants.t[i].etat.h := 60;
+		fenetre.enfants.t[i].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[i].etat.w, fenetre.enfants.t[i].etat.h, 32, 0, 0, 0, 0);
+	end;
 end;
 
-procedure jeu_partie(c: T_GAMEPLAY_CONFIG; var fenetre: T_UI_ELEMENT);
+procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
+	infoPartie: T_GAMEPLAY;
 begin
-	physique.taille:=0;
-	partie_init(c, physique, fenetre);
+	infoPartie.config := @config;
+	partie_init(infoPartie, physique, fenetre);
 	partie_course(physique, fenetre);
 end;
 
-procedure jeu_menu(var c: T_GAMEPLAY_CONFIG; fenetre: T_UI_ELEMENT);
+procedure jeu_menu(var fenetre: T_UI_ELEMENT);
+var config : T_CONFIG;
 begin
-	c.circuit:='Monza';
-	c.chemin:='pathToMonza';
+	config.circuit.nom:='Monza';
+	config.circuit.chemin:='pathToMonza';
+	config.nbTour:= 3;
+	config.mode:= True;
+	jeu_partie(config, fenetre);
 end;
 
 procedure score(var fenetre: T_UI_ELEMENT);
@@ -140,18 +164,10 @@ begin
 	
 end;
 
-procedure jeu(var fenetre: T_UI_ELEMENT);
-var	jeu_config : T_GAMEPLAY_CONFIG;
-begin
-	jeu_config.circuit:='';
-	jeu_config.chemin:='';
-	jeu_menu(jeu_config, fenetre);
-	jeu_partie(jeu_config, fenetre);
-end;
 
 procedure menu(var fenetre: T_UI_ELEMENT);
 begin
-	jeu(fenetre);
+	jeu_menu(fenetre);
 end;
 
 function lancement(): T_UI_ELEMENT;
@@ -160,7 +176,7 @@ begin
 	writeln('Lancement...');
 	if SDL_Init(SDL_INIT_EVERYTHING) = 0 then
 	begin
-		lancement.surface := SDL_SetVideoMode(1280, 720, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
+		lancement.surface := SDL_SetVideoMode(1920, 1080, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
 		if lancement.surface <> NIL then
 			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL)
 		else
