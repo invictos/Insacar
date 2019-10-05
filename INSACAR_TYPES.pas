@@ -22,9 +22,9 @@ type
 	T_UI_ELEMENT = record
 		etat: SDL_RECT; {dimension / position}
 		surface: PSDL_SURFACE;
-		typeE:(image, texte, couleur);
+		typeE:(null, image, texte, couleur);
 		valeur: String;
-		couleur: array[0..2] of Byte;
+		couleur: TSDL_Color;
 		physique: ^T_PHYSIQUE_ELEMENT;
 		enfants: T_UI_TABLEAU;
 	end;

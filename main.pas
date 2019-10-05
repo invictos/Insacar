@@ -1,5 +1,5 @@
 program demo;
-uses sdl, INSACAR_TYPES;
+uses sdl, sdl_ttf, INSACAR_TYPES;
 
 
 const
@@ -10,17 +10,31 @@ const
 	C_PHYSIQUE_VOITURE_ANGLE = 0.03;
 	C_PHYSIQUE_VOITURE_VITESSE_ARRIERE = 0.25;
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
-
+	
 
 procedure frame_afficher(var element: T_UI_ELEMENT);
 var i: Integer;
+	police: PTTF_Font;
 begin
-		SDL_FillRect(element.surface, NIL, SDL_MapRGB(element.surface^.format, element.couleur[0], element.couleur[1], element.couleur[2]));
-		for i:=0 to element.enfants.taille-1 do
+	case element.typeE of
+		couleur:
 		begin
-			frame_afficher(element.enfants.t[i]);
-			SDL_BlitSurface(element.enfants.t[i].surface, NIL, element.surface, @element.enfants.t[i].etat);
+			SDL_FillRect(element.surface, NIL, SDL_MapRGB(element.surface^.format, element.couleur.r, element.couleur.g, element.couleur.b));
 		end;
+		texte:
+		begin
+			police := TTF_OpenFont('arial.ttf',55);
+			element.surface := TTF_RenderText_Solid(police, 'jouer', element.couleur);
+		end;
+		image:
+		begin
+		end;
+	end;
+	for i:=0 to element.enfants.taille-1 do
+	begin
+		frame_afficher(element.enfants.t[i]);
+		SDL_BlitSurface(element.enfants.t[i].surface, NIL, element.surface, @element.enfants.t[i].etat);
+	end;
 end;
 
 procedure afficher_hud(var fenetre: T_UI_ELEMENT);
@@ -113,8 +127,62 @@ begin
 	course_arrivee(infoPartie, fenetre);
 end;
 
+{UNIT ? ?? }
+procedure add_physique(var physique: T_PHYSIQUE_TABLEAU);
+var old: ^T_PHYSIQUE_ELEMENT;
+	i: Integer;
+begin
+	old:=physique.t;
+	physique.t := GetMem((physique.taille+1)*SizeOf(T_PHYSIQUE_ELEMENT));
+	
+	for i:=0 to physique.taille-1 do
+		physique.t[i]:=old[i];
+		
+	physique.t[physique.taille].x := 0;
+	physique.t[physique.taille].y := 0;
+	physique.t[physique.taille].dx := 0;
+	physique.t[physique.taille].dy := 0;
+	physique.t[physique.taille].a := 0;
+	physique.t[physique.taille].da := 0;
+	physique.t[physique.taille].r := 0;
+	physique.t[physique.taille].dr :=0;
+	
+	Freemem(old, physique.taille*SizeOf(T_PHYSIQUE_ELEMENT));
+	physique.taille:=physique.taille+1;
+end;
+
+procedure add_enfant(var enfants: T_UI_TABLEAU);
+var old: ^T_UI_ELEMENT;
+	i: Integer;
+begin
+	
+	old:=enfants.t;
+	enfants.t := GetMem((enfants.taille+1)*SizeOf(T_UI_ELEMENT));
+	
+	for i:=0 to enfants.taille-1 do
+		enfants.t[i]:=old[i];
+		
+	enfants.t[enfants.taille].etat.x := 0;
+	enfants.t[enfants.taille].etat.y := 0;
+	enfants.t[enfants.taille].etat.w := 0;
+	enfants.t[enfants.taille].etat.h := 0;
+	enfants.t[enfants.taille].surface := NIL;
+	enfants.t[enfants.taille].typeE := null;
+	enfants.t[enfants.taille].valeur:='';
+	enfants.t[enfants.taille].couleur.r:=0;
+	enfants.t[enfants.taille].couleur.g:=0;
+	enfants.t[enfants.taille].couleur.b:=0;
+	enfants.t[enfants.taille].physique:=NIL;
+	enfants.t[enfants.taille].enfants.taille:=0;
+	enfants.t[enfants.taille].enfants.t:=NIL;
+	
+	Freemem(old, enfants.taille*SizeOf(T_UI_ELEMENT));
+	enfants.taille:=enfants.taille+1;
+end;
+
+{UNIT ? ?? }
+
 procedure partie_init(infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU;var fenetre: T_UI_ELEMENT);
-var i : Byte;
 begin
 	{Gameplay}
 	infoPartie.temps.debut:=0;
@@ -125,43 +193,24 @@ begin
 	else
 		infoPartie.joueurs.taille := 2;
 	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
+	physique.taille:=0;
 	
-	{Physique // CALCUL NB ELEMENT PHYSIQUE = JOUEURS + AUTRES}
-	physique.taille := infoPartie.joueurs.taille;
-	physique.t := GetMem(physique.taille*SizeOf(T_PHYSIQUE_ELEMENT));
-	for i:=0 to physique.taille do
-	begin
-		physique.t[i].x := 0;
-		physique.t[i].y := 0;
-		physique.t[i].dx := 0;
-		physique.t[i].dy := 0;
-		physique.t[i].a := 0;
-		physique.t[i].da := 0;
-		physique.t[i].r := 0;
-		physique.t[i].dr :=0;
-	end;
-	
+	add_physique(physique);
+	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1];
+
+	fenetre.enfants.taille:=0;
 	fenetre.typeE:=couleur;
-	fenetre.couleur[0]:=19;
-	fenetre.couleur[1]:=200;
-	fenetre.couleur[2]:=209;
-	fenetre.enfants.taille:=1;
-	fenetre.enfants.t:=GetMem(fenetre.enfants.taille * SizeOf(T_UI_ELEMENT));
-	for i:=0 to fenetre.enfants.taille do
-	begin
-		fenetre.enfants.t[i].physique:=@physique.t[i];
-		fenetre.enfants.t[i].etat.x := 0;
-		fenetre.enfants.t[i].etat.y := 0;
-		fenetre.enfants.t[i].etat.w := 40;
-		fenetre.enfants.t[i].etat.h := 60;
-		fenetre.enfants.t[i].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[i].etat.w, fenetre.enfants.t[i].etat.h, 32, 0, 0, 0, 0);
-		fenetre.enfants.t[i].typeE := couleur;
-		fenetre.enfants.t[i].couleur[0]:=255;
-		fenetre.enfants.t[i].couleur[1]:=0;
-		fenetre.enfants.t[i].couleur[2]:=0;
-		fenetre.enfants.t[i].valeur:='';
-		fenetre.enfants.t[i].enfants.taille:=0;
-	end;
+	fenetre.couleur.r:=19;
+	fenetre.couleur.g:=200;
+	fenetre.couleur.b:=209;
+	
+	add_enfant(fenetre.enfants);
+	fenetre.enfants.t[fenetre.enfants.taille-1].physique:=@physique.t[physique.taille-1];
+	fenetre.enfants.t[fenetre.enfants.taille-1].etat.w := 40;
+	fenetre.enfants.t[fenetre.enfants.taille-1].etat.h := 60;
+	fenetre.enfants.t[fenetre.enfants.taille-1].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[fenetre.enfants.taille-1].etat.w, fenetre.enfants.t[fenetre.enfants.taille-1].etat.h, 32, 0, 0, 0, 0);
+	fenetre.enfants.t[fenetre.enfants.taille-1].typeE := couleur;
+	fenetre.enfants.t[fenetre.enfants.taille-1].couleur.r:=255;
 end;
 
 procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
@@ -199,6 +248,7 @@ begin
 	writeln('Lancement...');
 	if SDL_Init(SDL_INIT_EVERYTHING) = 0 then
 	begin
+		TTF_Init();
 		lancement.surface := SDL_SetVideoMode(1920, 1080, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
 		if lancement.surface <> NIL then
 			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL)
@@ -211,6 +261,9 @@ begin
 	begin
 		writeln('Erreur Initialisation');
 	end;
+	
+	{FIN DU PROGRAMME}
+	TTF_Quit();
 end;
 
 var fenetre : T_UI_ELEMENT;
