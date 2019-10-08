@@ -46,6 +46,7 @@ type
 		voiture: record
 			couleur: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
+			ui: ^T_UI_ELEMENT;
 		end;
 		temps : record
 			debut: Integer;

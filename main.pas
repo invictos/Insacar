@@ -44,6 +44,12 @@ end;
 procedure afficher_camera(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var i : Integer;
 begin
+	{for i:=0 to fenetre.enfants.taille-1 do
+	begin
+		fenetre.enfants.t[i].surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1.0, 1);
+		fenetre.enfants.t[i].etat.x := Round(fenetre.enfants.t[i].physique^.x-fenetre.enfants.t[i].surface^.w/2);
+		fenetre.enfants.t[i].etat.y := Round(fenetre.enfants.t[i].physique^.y-fenetre.enfants.t[i].surface^.h/2);
+	end;}
 	for i:=0 to fenetre.enfants.taille-1 do
 	begin
 		fenetre.enfants.t[i].surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1.0, 1);
@@ -196,36 +202,30 @@ begin
 		infoPartie.joueurs.taille := 1
 	else
 		infoPartie.joueurs.taille := 2;
+	
 	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
 	
 	physique.taille:=0;
-	
 	ajouter_physique(physique);
-	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1];
 	
+	fenetre.enfants.taille:=0;
+	ajouter_enfant(fenetre.enfants);
+		
+	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1];
+	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1];
+	
+	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
 	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture.png');
 	
-	writeln('test');
 	infoPartie.joueurs.t[0].voiture.physique^.x := Round(infoPartie.joueurs.t[0].voiture.couleur^.w / 2);
-	
-	writeln('test');
-	
 	infoPartie.joueurs.t[0].voiture.physique^.y := Round(infoPartie.joueurs.t[0].voiture.couleur^.h / 2);
-
-	fenetre.enfants.taille:=0;
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1].physique:=@physique.t[physique.taille-1]; {UTILISER PHYSIQUE DANS UI ? }
+	
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=19;
 	fenetre.couleur.g:=200;
-	fenetre.couleur.b:=209;
-	ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1].physique:=@physique.t[physique.taille-1];
-	
-	//fenetre.enfants.t[fenetre.enfants.taille-1].etat.w := infoPartie.joueurs.t[0].voiture.couleur^.w;
-	//fenetre.enfants.t[fenetre.enfants.taille-1].etat.h := infoPartie.joueurs.t[0].voiture.couleur^.h;
-	
-	//fenetre.enfants.t[fenetre.enfants.taille-1].surface := SDL_CreateRGBSurface(SDL_HWSURFACE, fenetre.enfants.t[fenetre.enfants.taille-1].etat.w, fenetre.enfants.t[fenetre.enfants.taille-1].etat.h, 32, 0, 0, 0, 0);
-	fenetre.enfants.t[fenetre.enfants.taille-1].typeE := image;
-	//fenetre.enfants.t[fenetre.enfants.taille-1].couleur.r:=255;
+	fenetre.couleur.b:=209;	
 end;
 
 procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
@@ -264,7 +264,7 @@ begin
 	if SDL_Init(SDL_INIT_EVERYTHING) = 0 then
 	begin
 		TTF_Init();
-		lancement.surface := SDL_SetVideoMode(1920, 1080, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
+		lancement.surface := SDL_SetVideoMode(1600, 900, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
 		if lancement.surface <> NIL then
 			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL)
 		else
