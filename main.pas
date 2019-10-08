@@ -4,9 +4,9 @@ uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES;
 
 const
 	C_REFRESHRATE = 100; {FPS}
-	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.05;
+	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.01;
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1;
-	C_PHYSIQUE_VOITURE_VITESSE_AVANT = 0.3;
+	C_PHYSIQUE_VOITURE_VITESSE_AVANT = 0.1;
 	C_PHYSIQUE_VOITURE_ANGLE = 1;
 	C_PHYSIQUE_VOITURE_VITESSE_ARRIERE = 0.25;
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
@@ -30,7 +30,6 @@ begin
 		begin
 		end;
 	end;
-	
 	for i:=0 to element.enfants.taille-1 do
 	begin
 		frame_afficher(element.enfants.t[i]);
@@ -166,7 +165,7 @@ begin
 	
 	for i:=0 to enfants.taille-1 do
 		enfants.t[i]:=old[i];
-		
+	
 	enfants.t[enfants.taille].etat.x := 0;
 	enfants.t[enfants.taille].etat.y := 0;
 	enfants.t[enfants.taille].etat.w := 0;
@@ -203,8 +202,14 @@ begin
 	
 	ajouter_physique(physique);
 	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1];
+	
 	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture.png');
+	
+	writeln('test');
 	infoPartie.joueurs.t[0].voiture.physique^.x := Round(infoPartie.joueurs.t[0].voiture.couleur^.w / 2);
+	
+	writeln('test');
+	
 	infoPartie.joueurs.t[0].voiture.physique^.y := Round(infoPartie.joueurs.t[0].voiture.couleur^.h / 2);
 
 	fenetre.enfants.taille:=0;
@@ -212,7 +217,6 @@ begin
 	fenetre.couleur.r:=19;
 	fenetre.couleur.g:=200;
 	fenetre.couleur.b:=209;
-	
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1].physique:=@physique.t[physique.taille-1];
 	
