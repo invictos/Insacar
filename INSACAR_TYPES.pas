@@ -44,7 +44,7 @@ type
 	T_JOUEUR = record
 		nom: String;
 		voiture: record
-			couleur: (bleu, rouge);
+			couleur: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
 		end;
 		temps : record
