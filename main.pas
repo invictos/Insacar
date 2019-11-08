@@ -2,7 +2,7 @@ program demo;
 uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, dos;
 
 const
-	C_REFRESHRATE = 60; {FPS} // TEST
+	C_REFRESHRATE = 60; {FPS} // TEST COMMIT
 	C_UI_FENETRE_WIDTH = 1600;
 	C_UI_FENETRE_HEIGHT = 900;
 	
