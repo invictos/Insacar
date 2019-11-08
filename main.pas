@@ -1,5 +1,5 @@
 program demo;
-uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, dos;
+uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, dos,sysutils;
 
 const
 	C_REFRESHRATE = 60; {FPS}
@@ -342,16 +342,325 @@ begin
 	config.mode:=True;
 	jeu_partie(config, fenetre);
 end;
-
-procedure score(var fenetre: T_UI_ELEMENT);
+procedure score( fenetre: T_UI_ELEMENT);
+var	event_sdl: TSDL_Event;
+	tabreturn : array [0..2] of PSDL_SURFACE;
+	actif : Boolean;
 begin
+		
+	fenetre.couleur.r:=243;
+	fenetre.couleur.g:=243;
+	fenetre.couleur.b:=215;
+	
+	fenetre.enfants.taille:=0;
+		
+	ajouter_enfant(fenetre.enfants);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 300; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 80 ;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('jeu_menu/grey_panel.png')); 
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
+	
+	ajouter_enfant(fenetre.enfants);
+	
+
+	tabreturn[1]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton1.png')); 
+	tabreturn[0]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton0.png')); 
+	tabreturn[2]:=SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton2.png')); 
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1300; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=tabreturn[0] ; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
+	ajouter_enfant(fenetre.enfants.t[0]^.enfants);
+	
+	fenetre.enfants.t[0]^.enfants.t[0]^.typeE:= texte;
+	fenetre.enfants.t[0]^.enfants.t[0]^.valeur := 'test';
+	fenetre.enfants.t[0]^.enfants.t[0]^.etat.x := 20;
+	fenetre.enfants.t[0]^.enfants.t[0]^.etat.y:= 200;
+	
+	
+	
+	actif := True;
+	
+	while actif do
+	begin
+		while SDL_PollEvent(@event_sdl) = 1 do
+		begin
+			case event_sdl.type_ of
+			
+			SDL_QUITEV : actif:=False;
+			
+			SDL_MOUSEMOTION : 
+			begin
+
+				
+				if ((event_sdl.motion.x) > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
+						and (event_sdl.motion.y > (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y)) and (event_sdl.motion.y < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=tabreturn[2];
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1275;
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabreturn[0];
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1300; 
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+					end;			
+				
+		
+				
+			end;
+			SDL_MOUSEBUTTONDOWN :
+			begin
+				writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
+				
+				
+					if (event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h))
+						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+						begin
+								fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabreturn[1];
+								frame_afficher(fenetre);
+								SDL_FLip(fenetre.surface);
+								Sleep(300);
+								actif:=False;
+								
+						end;
+						
+						
+						
+			end;
+				
+			end; 	
+			
+			frame_afficher(fenetre);
+			SDL_FLip(fenetre.surface);
+		end;
+	end;
 	
 end;
 
 procedure menu(var fenetre: T_UI_ELEMENT);
+var	event_sdl: TSDL_Event;
+	actif : Boolean;
+
 begin
-	jeu_menu(fenetre);
+		
+	fenetre.typeE:=couleur;
+	fenetre.couleur.r:=197;
+	fenetre.couleur.g:=197;
+	fenetre.couleur.b:=197;
+
+	fenetre.enfants.taille := 0;
+	
+	ajouter_enfant(fenetre.enfants);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/background1.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
+	ajouter_enfant(fenetre.enfants);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/logo1.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
+	ajouter_enfant(fenetre.enfants);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/jouerbutton0.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+
+	ajouter_enfant(fenetre.enfants);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 650;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=IMG_Load('menu/buttons/scoresbutton0.png');
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+	
+	
+	
+	ajouter_enfant(fenetre.enfants);
+	
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 775;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/tutorielbutton0.png');
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+
+	
+	ajouter_enfant(fenetre.enfants);
+	
+
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 900;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton0.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+	
+
+	actif := True;
+	
+	
+	while actif do
+	begin		
+		while SDL_PollEvent(@event_sdl) = 1 do
+		begin
+			case event_sdl.type_ of
+			
+			SDL_QUITEV : actif:=False;
+			
+			SDL_MOUSEMOTION: 
+				begin
+					writeln( '  X: ', event_sdl.motion.x, '   Y: ', event_sdl.motion.y,
+					' dX: ', event_sdl.motion.xrel, '   dY: ', event_sdl.motion.yrel );
+							
+					
+					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton2.png');
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x := 65;
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y := 375;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton0.png');
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x := 90; 
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y := 375;
+					end;			
+					
+					
+					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h)) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton2.png');
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x := 65;
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y := 500;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+					
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton0.png');
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x := 90; 
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y := 500;
+				
+					end;			
+					
+					
+					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h)) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton2.png');
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x := 65;
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y := 625;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+					
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton0.png');
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x := 90; 
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y := 625;
+				
+					end;
+					
+					
+					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton2.png');
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 65;
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						
+					
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton0.png');
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
+						
+					end;						
+                end;
+                
+                
+			SDL_MOUSEBUTTONDOWN :
+				begin
+					writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
+							
+					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)))
+						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+						begin
+								fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton1.png');
+								frame_afficher(fenetre);
+								SDL_FLip(fenetre.surface);
+								Sleep(300);
+								jeu_menu(fenetre);
+							
+						end;
+					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h))) 
+						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+						begin
+								fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton1.png');
+								frame_afficher(fenetre);
+								SDL_FLip(fenetre.surface);
+								Sleep(300);
+								score(fenetre);
+								//actif:=False;
+						
+						end;	
+					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h))) 
+						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+						begin
+								fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton1.png');
+								frame_afficher(fenetre);
+								SDL_FLip(fenetre.surface);
+								Sleep(300);
+								//tutoriel(fenetre);
+									
+						end;
+					
+					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
+						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)))
+						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+						begin
+								fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton1.png');
+								frame_afficher(fenetre);
+								SDL_FLip(fenetre.surface);
+								Sleep(300);
+								actif:=False ;
+						end;
+				
+				end;
+			end;
+		end;
+		
+		
+		frame_afficher(fenetre);
+		SDL_FLip(fenetre.surface);
+	end;
+	//SDL_Delay(5000);
+
 end;
+
 
 function lancement(): T_UI_ELEMENT; //Init SDL, fenetre(nom, surface, taille), TTF
 begin
