@@ -1,21 +1,22 @@
 unit INSACAR_TYPES;
 
 interface
-uses sdl;
+uses sdl, sdl_ttf;
 
 type
 	T_PHYSIQUE_TABLEAU = record
-		t: ^T_PHYSIQUE_ELEMENT;
+		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;
 	end;
 	
 	T_PHYSIQUE_ELEMENT = record
-		x,y: Integer;
+		x,y: Real;
 		dx,dy,a,da,r,dr: Real;
 	end;
+	P_PHYSIQUE_ELEMENT = ^T_PHYSIQUE_ELEMENT;
 	
 	T_UI_TABLEAU = record
-		t: ^T_UI_ELEMENT;
+		t: ^P_UI_ELEMENT;
 		taille: Integer;
 	end;
 	
@@ -25,14 +26,18 @@ type
 		typeE:(null, image, texte, couleur);
 		valeur: String;
 		couleur: TSDL_Color;
+		police: PTTF_Font;
 		physique: ^T_PHYSIQUE_ELEMENT;
 		enfants: T_UI_TABLEAU;
 	end;
-
+	P_UI_ELEMENT = ^T_UI_ELEMENT;
+	
 	T_GAMEPLAY = record
 		temps: record
 			debut: Integer;
 			fin: Integer;
+			last: LongInt;
+			dt: Double;
 		end;
 		config: ^T_CONFIG;
 		joueurs : record
@@ -44,8 +49,9 @@ type
 	T_JOUEUR = record
 		nom: String;
 		voiture: record
-			couleur: (bleu, rouge);
+			couleur: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
+			ui: ^T_UI_ELEMENT;
 		end;
 		temps : record
 			debut: Integer;
