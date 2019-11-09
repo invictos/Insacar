@@ -342,18 +342,14 @@ begin
 	config.mode:=True;
 	jeu_partie(config, fenetre);
 end;
-
-
-
-procedure score_menu( fenetre: T_UI_ELEMENT);
+procedure score( fenetre: T_UI_ELEMENT);
 var	event_sdl: TSDL_Event;
         fichier : Text;
-        i,j,max,max2: integer;
+        i,j,max,k: integer;
 	tabreturn : array [0..2] of PSDL_SURFACE;
 	actif : Boolean;
-        tarace : string;
         arial,titre : PTTF_Font;
-        recup : array [0..2,0..20] of string;
+        recup : array [0..2,0..16] of string;
 begin
 
 	fenetre.couleur.r:=243;
@@ -366,117 +362,69 @@ begin
 	tabreturn[1]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton1.png'));
 	tabreturn[0]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton0.png'));
 	tabreturn[2]:=SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton2.png'));
-
-
-
-
-	ajouter_enfant(fenetre.enfants);                                         //tableau des scores
-
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 100;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 80 ;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('jeu_menu/grey_panel.png'));
-
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
-
-
-
-        //interieur des scores tableau 1
         Assign(fichier, 'scorereg.txt');
         reset(fichier);
-        max:=0;
-        max2:=0;
-        while (not(Eof(fichier)) and (max<16)) do
 
-                begin
-                for i:=0 to 2 do
+        for k:=1 to 2 do
+        begin
+	        ajouter_enfant(fenetre.enfants);                                         //tableau des scores
+                if k=1 then
+	        fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 100
+                else
+                fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=800;
+
+                fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 80 ;
+	        fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('jeu_menu/grey_panel.png'));
+                fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+
+                 max:=0;
+
+
+        //interieur des scores tableau
+
+                while (not(Eof(fichier)) and (max<16)) do
+
                         begin
-                        readln(fichier,recup[i,max]);
-                        end;
-                max:= max+1;
-                end;
+                        for i:=0 to 2 do
+                                begin
+                                readln(fichier,recup[i,max]);
+                                end;
+                                max:= max+1;
+                                end;
 
-        for j:=0 to max-1 do
-                begin
-                for i:=0 to 2do
+                for j:=0 to max-1 do
                         begin
-                        ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.typeE:=texte;
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.x:=((i*200)+40);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.y := ((j*40)+20);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.police := arial;
+                        for i:=0 to 2do
+                                begin
+                                ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.typeE:=texte;
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.x:=((i*200)+40);
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.y := ((j*40)+20);
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.police := arial;
+                                end;
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-3]^.valeur:=recup[0,j]  ;
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-2]^.valeur:=recup[1,j] ;
+                                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.valeur:=recup[2,j];
+
                         end;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-3]^.valeur:=recup[0,j]  ;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-2]^.valeur:=recup[1,j] ;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.valeur:=recup[2,j];
-
-                end;
 
 
 
-        For i:=0 to 2 do                                                   //titre des colonnes
-                begin
-                ajouter_enfant(fenetre.enfants);
-
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE:= texte;
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.x + ((i*200)+40));
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:= (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.y-40);
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.police:= titre;
-                end;
-                fenetre.enfants.t[fenetre.enfants.taille-3]^.valeur :='Pseudo';
-                fenetre.enfants.t[fenetre.enfants.taille-2]^.valeur :='Date';
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur :='Record';
-
-
-
-       ajouter_enfant(fenetre.enfants);                                         //tableau des scores
-
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 900;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 80 ;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('jeu_menu/grey_panel.png'));
-
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
-
-
-           while (not(Eof(fichier)) and (max2<16)) do
-
-                begin
-                for i:=0 to 2 do
+                For i:=0 to 2 do                                                   //titre des colonnes
                         begin
-                        readln(fichier,recup[i,max2]);
+                        ajouter_enfant(fenetre.enfants);
+
+	                fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE:= texte;
+	                fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.x + ((i*200)+40));
+	                fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:= (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.y-40);
+                        fenetre.enfants.t[fenetre.enfants.taille-1]^.police:= titre;
                         end;
-                max2:= max2+1;
-                end;
+                        fenetre.enfants.t[fenetre.enfants.taille-3]^.valeur :='Pseudo';
+                        fenetre.enfants.t[fenetre.enfants.taille-2]^.valeur :='Date';
+                        fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur :='Record';
 
-        for j:=0 to max2-1 do
-                begin
-                for i:=0 to 2do
-                        begin
-                        ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.typeE:=texte;
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.x:=((i*200)+40);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.y := ((j*40)+20);
-                        fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.police := arial;
-                        end;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-3]^.valeur:=recup[0,j]  ;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-2]^.valeur:=recup[1,j] ;
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.valeur:=recup[2,j];
+        end;
 
-                end;
-
-        For i:=0 to 2 do                                                   //titre des colonnes
-                begin
-                ajouter_enfant(fenetre.enfants);
-
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE:= texte;
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.x + ((i*200)+40));
-	        fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:= (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.y-40);
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.police:= titre;
-                end;
-                fenetre.enfants.t[fenetre.enfants.taille-3]^.valeur :='Pseudo';
-                fenetre.enfants.t[fenetre.enfants.taille-2]^.valeur :='Date';
-                fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur :='Record';
 
 
 	ajouter_enfant(fenetre.enfants);           //bouton retour
@@ -507,7 +455,7 @@ begin
 
 
 				if ((event_sdl.motion.x) > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w))
-						and (event_sdl.motion.y > (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y)) and (event_sdl.motion.y < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
+		and (event_sdl.motion.y > (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y)) and (event_sdl.motion.y < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=tabreturn[2];
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1275;
@@ -530,9 +478,11 @@ begin
 				writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
 
 
-					if (event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w))
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h))
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+					if (event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x)
+                                        and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w))
+					and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y)
+                                        and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h))
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
 						begin
 								fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabreturn[1];
 								frame_afficher(fenetre);
@@ -554,7 +504,6 @@ begin
 	end;
 
 end;
-
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl: TSDL_Event;
 	actif : Boolean;
@@ -571,66 +520,66 @@ begin
 	ajouter_enfant(fenetre.enfants);
 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/background1.png');
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
 	ajouter_enfant(fenetre.enfants);
-
+	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/logo1.png');
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
 	ajouter_enfant(fenetre.enfants);
-
+	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/jouerbutton0.png');
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 
 	ajouter_enfant(fenetre.enfants);
-
+	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 650;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=IMG_Load('menu/buttons/scoresbutton0.png');
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
-
-
+	
+	
+	
 	ajouter_enfant(fenetre.enfants);
-
-
+	
+	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 775;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/tutorielbutton0.png');
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
 
-
+	
 	ajouter_enfant(fenetre.enfants);
-
+	
 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 900;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton0.png');
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-
+	
 
 	actif := True;
-
-
+	
+	
 	while actif do
-	begin
+	begin		
 		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
-
+			
 			SDL_QUITEV : actif:=False;
-
+			
 			SDL_MOUSEMOTION:
 				begin
 					writeln( '  X: ', event_sdl.motion.x, '   Y: ', event_sdl.motion.y,
 					' dX: ', event_sdl.motion.xrel, '   dY: ', event_sdl.motion.yrel );
-
-
+							
+					
 					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)) then
 					begin
@@ -645,9 +594,9 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton0.png');
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x := 90;
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y := 375;
-					end;
-
-
+					end;			
+					
+					
 					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h)) then
 					begin
@@ -656,17 +605,17 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y := 500;
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
-
+					
 					end
 					else
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton0.png');
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x := 90;
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y := 500;
-
-					end;
-
-
+				
+					end;			
+					
+					
 					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h)) then
 					begin
@@ -675,17 +624,17 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y := 625;
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
-
+					
 					end
 					else
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton0.png');
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x := 90;
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y := 625;
-
+				
 					end;
-
-
+					
+					
 					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
 					begin
@@ -694,23 +643,23 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
-
-
+						
+					
 					end
 					else
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton0.png');
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90;
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
-
-					end;
+						
+					end;						
                 end;
 
 
 			SDL_MOUSEBUTTONDOWN :
 				begin
 					writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
-
+							
 					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)))
 						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
@@ -720,7 +669,7 @@ begin
 								SDL_FLip(fenetre.surface);
 								Sleep(300);
 								jeu_menu(fenetre);
-
+							
 						end;
 					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h)))
@@ -730,10 +679,10 @@ begin
 								frame_afficher(fenetre);
 								SDL_FLip(fenetre.surface);
 								Sleep(300);
-								score_menu(fenetre);
+								score(fenetre);
+								//actif:=False;
 						
-
-						end;
+						end;	
 					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w))
 						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h)))
 						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
