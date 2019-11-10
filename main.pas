@@ -349,12 +349,12 @@ begin
 	fenetre.enfants.taille:=0;
 	
 	ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150; 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
-		panel1 := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
+		panel1 := fenetre.enfants.t[fenetre.enfants.taille-1]; //@ et ^ = fct Id.
 		panel1^.enfants.taille := 0;
 		
 		ajouter_enfant(panel1^.enfants);
@@ -407,7 +407,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
 	
-		panel2 := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
+		panel2 := fenetre.enfants.t[fenetre.enfants.taille-1];//@ et ^ = fct Id.
 		panel2^.enfants.taille := 0;
 		
 		ajouter_enfant(panel2^.enfants);
@@ -438,7 +438,7 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.r :=0;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.g :=0;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;	
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;
 		
 		ajouter_enfant(panel2^.enfants);																	
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 300;                                         
@@ -510,7 +510,7 @@ begin
 	begin
 		panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur := '0';
 	end;
-		
+	
 			
 	actif := True;
 	
@@ -545,14 +545,14 @@ begin
 					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.w)) 
 						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.h))) 
 						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
+						begin // CLICK PSEUDO
 							//writeln('test');
 							panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur := '1';
 						end;
 					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.w)) 
 						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.h))) 
 						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
+						begin //CLICK SELECT GAUCHE
 							writeln('test');
 							panel2^.enfants.t[panel2^.enfants.taille-2]^.valeur := '1';
 						end;
@@ -561,42 +561,42 @@ begin
 		
 			for i:=1 to 6 do
 			begin
-				writeln(panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur);			
+				//writeln('A',panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur);			
 			end;
 			
 			//Boucle dans les enfants de panel2
 			
 				
-			for i:= 0 to panel2^.enfants.taille-1 do	
+			for i:= 0 to panel2^.enfants.taille-1 do
 			begin
 				if panel2^.enfants.t[i]^.valeur = '1' then 
 					begin 		
 						case i of 
-							3 : 	
+							3 :
 							begin
-								txt := @panel2^.enfants.t[fenetre.enfants.taille-1-(1-i)]^;    
+								txt := panel2^.enfants.t[3];  //i test, donc on est sur.   //@ et ^ = fct Id.
 								
 								txt^.enfants.taille := 0;
 								ajouter_enfant(txt^.enfants);
-									writeln('test');	
-								txt^.enfants.t[i]^.etat.x := 0;
+									writeln('test');
+								txt^.enfants.t[0]^.etat.x := 10; //pos
 									writeln('test8');	
-								txt^.enfants.t[i]^.etat.y := 0;
+								txt^.enfants.t[0]^.etat.y := 15; //pos
 									writeln('test9');	
-								txt^.enfants.t[i]^.etat.w := 2;
+								txt^.enfants.t[0]^.etat.w := 2;
 									writeln('test1');	
-								txt^.enfants.t[i]^.etat.h := 20;
+								txt^.enfants.t[0]^.etat.h := 20;
 									writeln('test2');	
-								txt^.enfants.t[i]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[i]^.etat.w, txt^.enfants.t[i]^.etat.h, 32, 0, 0, 0, 0);
+								txt^.enfants.t[0]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[0]^.etat.w, txt^.enfants.t[0]^.etat.h, 32, 0, 0, 0, 0);
 									writeln('test3');	
-								txt^.enfants.t[i]^.typeE := couleur;	
+								txt^.enfants.t[0]^.typeE := couleur;	
 									writeln('test4');	
-								txt^.enfants.t[i]^.couleur.r:=0;
+								txt^.enfants.t[0]^.couleur.r:=0;
 									writeln('test5');	
-								txt^.enfants.t[i]^.couleur.g:=0;	
+								txt^.enfants.t[0]^.couleur.g:=0;	
 									writeln('test6');	
-								txt^.enfants.t[i]^.couleur.b:=0;
-									writeln('test7');	
+								txt^.enfants.t[0]^.couleur.b:=0;
+									writeln('test7');
 							
 							end;
 							
