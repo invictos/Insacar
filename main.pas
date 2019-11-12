@@ -17,6 +17,7 @@ const
 
 procedure frame_afficher(var element: T_UI_ELEMENT);
 var i: Integer;
+	tempSurfaceTab: P_UI_ELEMENT;
 begin
 	case element.typeE of
 		couleur:
@@ -32,14 +33,16 @@ begin
 		begin
 		end;
 	end;
+	
+	tempSurfaceTab:= GetMem(element.enfants.taille*SizeOf(T_UI_ELEMENT));
+	
 	for i:=0 to element.enfants.taille-1 do
 	begin
-		frame_afficher(element.enfants.t[i]^);
-		if (element.enfants.t[i]^.typeE = image) and (element.enfants.t[i]^.valeur = 'background') then
-			SDL_BlitSurface(element.enfants.t[i]^.surface, NIL, element.surface, @element.enfants.t[i]^.etat)
-		else
-			SDL_BlitSurface(element.enfants.t[i]^.surface, NIL, element.surface, @element.enfants.t[i]^.etat);
+		tempSurfaceTab[i]:=element.enfants.t[i]^;
+		frame_afficher(tempSurfaceTab[i]);
+		SDL_BlitSurface(tempSurfaceTab[i].surface, NIL, element.surface, @tempSurfaceTab[i].etat);
 	end;
+	freeMem(tempSurfaceTab, element.enfants.taille*SizeOf(T_UI_ELEMENT));
 end;
 
 procedure afficher_hud(var fenetre: T_UI_ELEMENT);
