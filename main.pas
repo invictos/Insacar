@@ -15,7 +15,7 @@ const
 	
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
 
-procedure frame_afficher(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: SDL_Rect);
+procedure frame_afficher_low(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: SDL_Rect);
 var i : Integer;
 begin
 	case element.typeE of
@@ -36,8 +36,16 @@ begin
 	SDL_BlitSurface(element.surface, NIL, frame, @etat);
 	for i:=0 to element.enfants.taille-1 do
 	begin
-		frame_afficher(element.enfants.t[i]^, frame, etat);
+		frame_afficher_low(element.enfants.t[i]^, frame, etat);
 	end;
+end;
+
+procedure frame_afficher(var element: T_UI_ELEMENT);
+var etat: SDL_Rect;
+begin
+	etat.x:=0;
+	etat.y:=0;
+	frame_afficher_low(element,element.surface,etat);
 end;
 
 procedure afficher_hud(var fenetre: T_UI_ELEMENT);
@@ -113,7 +121,6 @@ end;
 procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);{Main Loop}
 var actif: boolean;
 	timer: array[0..7] of LongInt; {départ, boucle, delay,user,physique,gameplay,courseAfficher,frameAfficher}
-	etat: SDL_Rect;
 begin
 	course_depart(fenetre);
 	actif:=true;
@@ -138,9 +145,7 @@ begin
 		
 		course_afficher(infoPartie, physique, fenetre);
 		timer[6]:=SDL_GetTicks();
-		etat.x:=0;
-		etat.y:=0;
-		frame_afficher(fenetre, fenetre.surface, etat);
+		frame_afficher(fenetre);
 		timer[7]:=SDL_GetTicks();
 		
 		SDL_Flip(fenetre.surface);
