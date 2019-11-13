@@ -4,6 +4,8 @@ interface
 uses sdl, sdl_ttf;
 
 type
+
+	
 	T_PHYSIQUE_TABLEAU = record
 		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;
@@ -24,7 +26,7 @@ type
 		etat: SDL_RECT; {dimension / position}
 		surface: PSDL_SURFACE;
 		typeE:(null, image, texte, couleur);
-		valeur: String;
+		valeur : String;
 		couleur: TSDL_Color;
 		police: PTTF_Font;
 		physique: ^T_PHYSIQUE_ELEMENT;
