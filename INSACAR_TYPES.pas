@@ -23,8 +23,9 @@ type
 	T_UI_ELEMENT = record
 		etat: SDL_RECT; {dimension / position}
 		surface: PSDL_SURFACE;
+		rsurface: PSDL_SURFACE;
 		typeE:(null, image, texte, couleur);
-		valeur: String;
+		valeur: AnsiString;
 		couleur: TSDL_Color;
 		police: PTTF_Font;
 		physique: ^T_PHYSIQUE_ELEMENT;
