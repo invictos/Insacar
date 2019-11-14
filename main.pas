@@ -1,8 +1,9 @@
 program demo;
-uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, dos, sysutils;
+
+uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils;
 
 const
-	C_REFRESHRATE = 60; {FPS}
+	C_REFRESHRATE = 90; {FPS} // TEST COMMIT
 	C_UI_FENETRE_WIDTH = 1600;
 	C_UI_FENETRE_HEIGHT = 900;
 	//test
@@ -15,10 +16,9 @@ const
 	
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
 
-
-procedure frame_afficher(var element: T_UI_ELEMENT);
-var i: Integer;
-
+procedure frame_afficher_low(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: SDL_Rect);
+var i : Integer;
+		s : ansiString;
 begin
 	case element.typeE of
 		couleur:
@@ -27,21 +27,28 @@ begin
 		end;
 		texte:
 		begin
-			writeln(SDL_GetError());
-			element.surface := TTF_RenderText_Solid(element.police, @element.valeur[1], element.couleur);
+			s:= element.valeur;
+			element.surface := TTF_RenderText_Solid(element.police, Pchar(s), element.couleur);
 		end;
 		image:
 		begin
 		end;
 	end;
+	etat.x:=etat.x+element.etat.x;
+	etat.y:=etat.y+element.etat.y;
+	SDL_BlitSurface(element.surface, NIL, frame, @etat);
 	for i:=0 to element.enfants.taille-1 do
 	begin
-		frame_afficher(element.enfants.t[i]^);
-		if (element.enfants.t[i]^.typeE = image) and (element.enfants.t[i]^.valeur = 'background') then
-			SDL_BlitSurface(element.enfants.t[i]^.surface, NIL, element.surface, @element.enfants.t[i]^.etat)
-		else
-			SDL_BlitSurface(element.enfants.t[i]^.surface, NIL, element.surface, @element.enfants.t[i]^.etat);
+		frame_afficher_low(element.enfants.t[i]^, frame, etat);
 	end;
+end;
+
+procedure frame_afficher(var element: T_UI_ELEMENT);
+var etat: SDL_Rect;
+begin
+	etat.x:=0;
+	etat.y:=0;
+	frame_afficher_low(element,element.surface,etat);
 end;
 
 procedure afficher_hud(var fenetre: T_UI_ELEMENT);
@@ -53,21 +60,15 @@ var i : Integer;
 begin
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
-		{infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1.0, 1);
-		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
-		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.joueurs.t[i].voiture.physique^.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
-		writeln('UI:',i,'/',infoPartie.joueurs.t[i].voiture.ui^.etat.x,'+',infoPartie.joueurs.t[i].voiture.ui^.etat.y);}
-		
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1.0, 1);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
 		fenetre.enfants.t[0]^.etat.x := Round(-infoPartie.joueurs.t[i].voiture.physique^.x);
 		fenetre.enfants.t[0]^.etat.y := Round(-infoPartie.joueurs.t[i].voiture.physique^.y);
-		
 	end;
 end;
 
-procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);
+procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 begin
 	afficher_camera(infoPartie, fenetre);
 	afficher_hud(fenetre);
@@ -75,6 +76,7 @@ end;
 
 procedure course_gameplay(var infoPartie: T_GAMEPLAY);
 begin
+infoPartie.joueurs.t[0].voiture.ui^.enfants.t[0]^.valeur:=IntToStr(Round(infoPartie.joueurs.t[0].voiture.physique^.a));
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
@@ -85,7 +87,7 @@ begin
 			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 			physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 			physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
-			writeln('Physique:',i,'/',physique.t[i]^.x,'+',physique.t[i]^.y);
+			//writeln('Physique:',i,'/',physique.t[i]^.x,'+',physique.t[i]^.y);
 		end;
 end;
 
@@ -108,7 +110,7 @@ begin
 		
 	if event_clavier[SDLK_RIGHT] = SDL_PRESSED then
 		infoPartie.joueurs.t[0].voiture.physique^.a := infoPartie.joueurs.t[0].voiture.physique^.a - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
-	writeln('DR:',infoPartie.joueurs.t[0].voiture.physique^.dr);
+	//writeln('DR:',infoPartie.joueurs.t[0].voiture.physique^.dr);
 end;
 
 procedure course_arrivee(var infoPartie; var fenetre: T_UI_ELEMENT);
@@ -128,7 +130,7 @@ begin
 	while actif do
 	begin
 		infoPartie.temps.dt:=(SDL_GetTicks()-infoPartie.temps.last)/1000;
-		writeln('DT: ',infoPartie.temps.dt);
+		//writeln('DT: ',infoPartie.temps.dt);
 		infoPartie.temps.last := SDL_GetTicks();
 		
 		timer[0]:=SDL_GetTicks();
@@ -146,7 +148,6 @@ begin
 		
 		course_afficher(infoPartie, physique, fenetre);
 		timer[6]:=SDL_GetTicks();
-		
 		frame_afficher(fenetre);
 		timer[7]:=SDL_GetTicks();
 		
@@ -162,64 +163,6 @@ begin
 	course_arrivee(infoPartie, fenetre);
 end;
 
-
-{
-function ajouter_physique(var physique: T_PHYSIQUE_TABLEAU): P_PHYSIQUE_ELEMENT;
-var old: ^T_PHYSIQUE_ELEMENT;
-	i: Integer;
-begin
-	old:=physique.t;
-	physique.t := GetMem((physique.taille+1)*SizeOf(T_PHYSIQUE_ELEMENT));
-	
-	for i:=0 to physique.taille-1 do
-		physique.t[i]:=old[i];
-	
-	ajouter_physique := @physique.t[physique.taille];
-	
-	ajouter_physique^.x := 0;
-	ajouter_physique^.y := 0;
-	ajouter_physique^.dx := 0;
-	ajouter_physique^.dy := 0;
-	ajouter_physique^.a := 0;
-	ajouter_physique^.da := 0;
-	ajouter_physique^.r := 0;
-	ajouter_physique^.dr :=0;
-	
-	Freemem(old, physique.taille*SizeOf(T_PHYSIQUE_ELEMENT));
-	physique.taille:=physique.taille+1;
-end;
-
-function ajouter_enfant(var enfants: T_UI_TABLEAU): P_UI_ELEMENT;
-var old: ^T_UI_ELEMENT;
-	i: Integer;
-begin
-	
-	old:=enfants.t;
-	enfants.t := GetMem((enfants.taille+1)*SizeOf(T_UI_ELEMENT));
-	
-	for i:=0 to enfants.taille-1 do
-		enfants.t[i]:=old[i];
-	
-	ajouter_enfant := @enfants.t[enfants.taille];
-	
-	ajouter_enfant^.etat.x := 0;
-	ajouter_enfant^.etat.y := 0;
-	ajouter_enfant^.etat.w := 0;
-	ajouter_enfant^.etat.h := 0;
-	ajouter_enfant^.surface := NIL;
-	ajouter_enfant^.typeE := null;
-	ajouter_enfant^.valeur:='';
-	ajouter_enfant^.couleur.r:=0;
-	ajouter_enfant^.couleur.g:=0;
-	ajouter_enfant^.couleur.b:=0;
-	ajouter_enfant^.physique:=NIL;
-	ajouter_enfant^.enfants.taille:=0;
-	ajouter_enfant^.enfants.t:=NIL;
-	
-	Freemem(old, enfants.taille*SizeOf(T_UI_ELEMENT));
-	enfants.taille:=enfants.taille+1;
-end;
-}
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
 var old: ^P_PHYSIQUE_ELEMENT;
 	i: Integer;
@@ -317,14 +260,14 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
 	//fin boucle
 	//test
-	{infoPartie.joueurs.t[0].voiture.ui^.enfants.taille := 0;
+	infoPartie.joueurs.t[0].voiture.ui^.enfants.taille := 0;
 	ajouter_enfant(infoPartie.joueurs.t[0].voiture.ui^.enfants);
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.typeE := texte;
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.valeur := 'test'#0;
+	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.valeur := 'test';
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.r :=0;
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.g :=0;
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.b :=0;}
+	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.b :=0;
 end;
 
 procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
@@ -336,22 +279,34 @@ begin
 	partie_course(infoPartie, physique, fenetre);
 end;
 
+function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
+begin
+	isInElement := 	(x > element.etat.x)
+				and	(x < (element.etat.x + element.surface^.w))
+				and (y > element.etat.y)
+				and (y < (element.etat.y + element.surface^.h));
+end;
+
 procedure jeu_menu(fenetre: T_UI_ELEMENT);
-var //config : T_CONFIG;
-	actif, actif1 : Boolean;
-	event_sdl: TSDL_Event;
+var event_sdl: TSDL_Event;
 	panel1, panel2, txt : P_UI_ELEMENT;
-	i, j: Integer;
-	pseudo : String;
-	lettre : TSDLKey;
-	//alphabet : set of lettres;
-	event_clavier : PUint8;
+	i, actuel: Integer;
+	actif: Boolean;
+	pseudo: String;
+	event_clavier : PUInt8;
+	tabSkin, tabCircuit : array [0..2] of String;
 	
 begin
+
+	actuel:=1;
 	
-	//tab[0] := 'Rouge'#0;
-	//tab[1] := 'Bleu'#0;
-	//tab[2] := 'Vert'#0;
+	tabSkin[0] := 'Bleu';
+	tabSkin[1] := 'Rouge';
+	tabSkin[2] := 'Vert';
+
+	tabCircuit[0] := 'Monza';
+	tabCircuit[1] := 'Monaco';
+	tabCircuit[2] := 'Rouen';
 	
 	fenetre.couleur.r:=243;
 	fenetre.couleur.g:=243;
@@ -366,17 +321,17 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
 	ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	panel1 := fenetre.enfants.t[fenetre.enfants.taille-1];
+	panel1^.etat.x := 150;
+	panel1^.etat.y := 75;
+	panel1^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
+	panel1^.typeE := image;	
 	
-		panel1 := fenetre.enfants.t[fenetre.enfants.taille-1]; //@ et ^ = fct Id.
-		panel1^.enfants.taille := 0;
+	panel1^.enfants.taille := 0;
 		
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
-		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Mode de jeu'#0;
+		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Mode de jeu';
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 50;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y := 77;
@@ -386,7 +341,7 @@ begin
 		
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
-		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Contre-la-montre'#0;
+		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Contre-la-montre';
 		
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 300;
@@ -395,10 +350,9 @@ begin
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.couleur.g :=0;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.couleur.b :=0;
 		
-		
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
-		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Circuit'#0;
+		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Circuit';
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 90;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y := 250;
@@ -408,7 +362,7 @@ begin
 		
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
-		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := 'Monza'#0;
+		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := tabCircuit[actuel];
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 355;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y := 250;
@@ -440,18 +394,18 @@ begin
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.surface :=IMG_Load('jeu_menu/blue_sliderRight.png'); 
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := image;
 		
-	ajouter_enfant(fenetre.enfants);	
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 900; 
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+	ajouter_enfant(fenetre.enfants);
+	panel2 := fenetre.enfants.t[fenetre.enfants.taille-1];	
+	panel2^.etat.x := 900; 
+	panel2^.etat.y := 75;
+	panel2^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
+	panel2^.typeE := image;
 	
-		panel2 := fenetre.enfants.t[fenetre.enfants.taille-1];//@ et ^ = fct Id.
-		panel2^.enfants.taille := 0;
+	panel2^.enfants.taille := 0;
 		
 		ajouter_enfant(panel2^.enfants);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := texte;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := 'Pseudo'#0;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := 'Pseudo';
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 80;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 90;
@@ -461,7 +415,7 @@ begin
 		
 		ajouter_enfant(panel2^.enfants);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := texte;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := 'Skin'#0;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := 'Skin';
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 80;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
@@ -471,7 +425,7 @@ begin
 		
 		ajouter_enfant(panel2^.enfants);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := texte;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := 'Bleu'#0;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := tabSkin[actuel];
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 365;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
@@ -496,307 +450,266 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.surface := IMG_Load('jeu_menu/blue_sliderRight.png'); 
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := image;
-		
-	{Mode 2 joueurs
-	
-	ajouter_enfant(fenetre.enfants);	
-	fenetre.enfants.t[fenetre.enfants.taille-1].etat.x := 900; 
-	fenetre.enfants.t[fenetre.enfants.taille-1].etat.y := 500;
-	fenetre.enfants.t[fenetre.enfants.taille-1].surface := IMG_Load('jeu_menu/grey_panel.png'); 
-	fenetre.enfants.t[fenetre.enfants.taille-1].typeE := image;	
-	
-		panel3 := @fenetre.enfants.t[fenetre.enfants.taille-1];
-		panel3^.enfants.taille := 0;
-		
-		ajouter_enfant(panel3^.enfants);
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.x := 300; 
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.y := 80;
-		panel3^.enfants.t[panel3^.enfants.taille-1].surface := IMG_Load('jeu_menu/grey_button05.png'); 
-		panel3^.enfants.t[panel3^.enfants.taille-1].typeE := image;
-		
-		ajouter_enfant(panel3^.enfants);
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.x := 250; 
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.y := 250;
-		panel3^.enfants.t[panel3^.enfants.taille-1].surface := IMG_Load('jeu_menu/blue_sliderLeft.png'); 
-		panel3^.enfants.t[panel3^.enfants.taille-1].typeE := image;
-		
-		ajouter_enfant(panel3^.enfants);
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.x := 500; 
-		panel3^.enfants.t[panel3^.enfants.taille-1].etat.y := 250;
-		panel3^.enfants.t[panel3^.enfants.taille-1].surface := IMG_Load('jeu_menu/blue_sliderRight.png'); 
-		panel3^.enfants.t[panel3^.enfants.taille-1].typeE := image;}
 	
 	
 	for i:=4 downto 1 do
 	begin
 		panel1^.enfants.t[panel1^.enfants.taille-i]^.valeur := '0';
 	end;
-	
-	
+		
 	for i:=3 downto 1 do
 	begin
 		panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur := '0';
 	end;
 	
-	 		
 	actif := True;
-		
-	pseudo := ' ';
+	pseudo := '';
+	
 	
 	while actif do
 	begin
-	{	for i:=4 downto 1 do
+		
+		for i:=4 downto 1 do
 		begin
 			panel1^.enfants.t[panel1^.enfants.taille-i]^.valeur := '0';
 		end;
-	
-	
+			
 		for i:=3 downto 1 do
 		begin
 			panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur := '0';
-		end;}
+		end;
 	
-		
-		while SDL_PollEvent(@event_sdl) = 1 do
+	
+		if SDL_PollEvent(@event_sdl) = 1 then
 		begin
 			case event_sdl.type_ of
 			
 			SDL_QUITEV : actif:=False;
+									
+			SDL_MOUSEMOTION : 
+			begin
+				writeln( 'X: ', event_sdl.motion.x, ' Y: ', event_sdl.motion.y);
+			end;
 			
-		{	SDL_KEYDOWN : 
+			SDL_MOUSEBUTTONDOWN :
+			begin
+				writeln( 'Mouse button pressed : Button index : ',event_sdl.button.button);
+				
+				if isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)
+					and (event_sdl.button.state = SDL_PRESSED)
+					and (event_sdl.button.button = 1) then
+				begin
+					Sleep(200);
+					actif:=False;
+				end;
+				
+				//Boutons panel1
+				
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-4]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-4]^.surface^.h)))
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin // CLICK SELECT GAUCHE MODE
+					panel1^.enfants.t[panel1^.enfants.taille-4]^.valeur := '1';
+				end;
+				
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-3]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-3]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin // CLICK SELECT DROIT MODE
+					panel1^.enfants.t[panel1^.enfants.taille-3]^.valeur := '1';
+				end;
+				
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-2]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-2]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin // CLICK SELECT DROIT CIRCUIT
+					panel1^.enfants.t[panel1^.enfants.taille-2]^.valeur := '1';
+				end;
+				
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-1]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-1]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin // CLICK SELECT GAUCHE CIRCUIT
+					panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := '1';
+				end;
+				
+				//Boutons panel2
+			
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-3]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-3]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin // CLICK PSEUDO
+					panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur := '1';
+				end;
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-2]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-2]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin //CLICK SELECT GAUCHE
+					panel2^.enfants.t[panel2^.enfants.taille-2]^.valeur := '1';
+				end;
+				if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x)
+					and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-1]^.surface^.w)) 
+					and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y)
+					and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-1]^.surface^.h))) 
+					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
+				begin //CLICK SELECT DROITE
+					panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := '1';
+				end;
+			end;
+			
+			//Gestion saisie pseudo
+			SDL_KEYDOWN : 
 			begin
 				if panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur = '1' then
 				begin
+				
+					event_clavier := SDL_GetKeyState(NIL);
+						
+					case event_sdl.key.keysym.sym of 
 					
-					pseudo := pseudo + Chr(event_sdl.key.keysym.sym);
+						SDLK_LSHIFT : pseudo := pseudo;				
+														
+						SDLK_BACKSPACE : Delete(pseudo,Length(pseudo),1);
+						
+						SDLK_q : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
+								 else pseudo := pseudo + 'a';
+														
+						SDLK_a : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Q'			
+								 else pseudo := pseudo + 'q';
+								
+						SDLK_w : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Z'
+							   	 else pseudo := pseudo + 'z';
+								
+						SDLK_z : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'W'
+								 else pseudo := pseudo + 'w';
+								
+						SDLK_SEMICOLON : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'M'	
+										 else pseudo := pseudo + 'm';
+										 			
+					else
+					begin
+						if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo + Chr(event_sdl.key.keysym.sym-32)		
+						else pseudo := pseudo + Chr(event_sdl.key.keysym.sym);
+					end;
+					end;
 					writeln('pseudo : ', pseudo);
 				end;
-			end;}
-									
-			SDL_MOUSEMOTION : 
-				begin
-					writeln( 'X: ', event_sdl.motion.x, ' Y: ', event_sdl.motion.y);
-
-				end;
-			
-			SDL_MOUSEBUTTONDOWN :
-				begin
-				writeln( 'Mouse button pressed : Button index : ',event_sdl.button.button);
-					
-					if (event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x)
-                                        and (event_sdl.motion.x < (fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w))
-					and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y)
-                                        and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h))
-					and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
-						
-							Sleep(200);
-							actif:=False;
-						end;
-					
-					//Boutons panel1
-					
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-4]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin // CLICK SELECT GAUCHE MODE
-							//writeln('test');
-							panel1^.enfants.t[panel1^.enfants.taille-4]^.valeur := '1';
-						end;
-					
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-3]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin // CLICK SELECT DROIT MODE
-							//writeln('test');
-							panel1^.enfants.t[panel1^.enfants.taille-3]^.valeur := '1';
-						end;
-					
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-2]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin // CLICK SELECT DROIT CIRCUIT
-							//writeln('test');
-							panel1^.enfants.t[panel1^.enfants.taille-2]^.valeur := '1';
-						end;
-					
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x > panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x < panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x + panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y > panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y < panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y + panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin // CLICK SELECT GAUCHE CIRCUIT
-							//writeln('test');
-							panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := '1';
-						end;
-					
-					//Boutons panel2
-				
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-3]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin // CLICK PSEUDO
-							//writeln('test');
-							panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur := '1';
-						end;
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-2]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin //CLICK SELECT GAUCHE
-							//writeln('test');
-							panel2^.enfants.t[panel2^.enfants.taille-2]^.valeur := '1';
-						end;
-					if (((event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x > panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x) and (event_sdl.motion.x-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x < panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x + panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.w)) 
-						and ((event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y > panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y) and (event_sdl.motion.y-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y < panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y + panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin //CLICK SELECT DROITE
-							//writeln('test');
-							panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := '1';
-						end;
-				end;
 			end;
+			end;
+		end;
 		
-			{for i:=1 to 7 do
-			begin
-				writeln(panel1^.enfants.t[panel1^.enfants.taille-i]^.valeur);			
-			end;}
-			
-			//Boucle dans les enfants de panel1
-			for i:= 4 to panel1^.enfants.taille-1 do
-			begin
-				if panel1^.enfants.t[i]^.valeur = '1' then 
-					begin 		
-						case i of 
-							4 :
-							begin
-							
-								panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := '1 vs 1'#0;
-								
-							end;
-							
-							6 : 
-							begin
-								
-								panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := 'Monaco'#0;
-							end;
+		//Boucle dans les enfants de panel1
+		for i:= 4 to panel1^.enfants.taille-1 do
+		begin
+			if panel1^.enfants.t[i]^.valeur = '1' then 
+			begin 		
+				case i of 
+					4 :
+					begin
+						panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := '1 vs 1';
+					end;
+					5 :
+					begin
+						panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := 'Contre-la-montre';
+					end;
+					6 :
+					begin
+						if (actuel-1 >= 0) and (actuel-1<=2) then
+						begin
+							actuel := actuel-1;
+							panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
+						end;					
+					end;
+					7 :
+					begin
+						if (actuel+1 >= 0) and (actuel+1<=2) then
+						begin
+							actuel := actuel+1;
+							panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
 						end;
 					end;
+				end;
 			end;
-			
-			
-			//Boucle dans les enfants de panel2
-			for i:= 3 to panel2^.enfants.taille-1 do
-			begin
-				if panel2^.enfants.t[i]^.valeur = '1' then 
-					begin 		
-						case i of 
-							3 :
-							begin
-								txt := panel2^.enfants.t[3];  //i test, donc on est sur.   //@ et ^ = fct Id.
-								
-								txt^.enfants.taille := 0;
-								
-								ajouter_enfant(txt^.enfants);				
-								txt^.enfants.t[0]^.etat.x := 10; //pos							
-								txt^.enfants.t[0]^.etat.y := 15; //pos										
-								txt^.enfants.t[0]^.etat.w := 2;
-								txt^.enfants.t[0]^.etat.h := 20;									
-								txt^.enfants.t[0]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[0]^.etat.w, txt^.enfants.t[0]^.etat.h, 32, 0, 0, 0, 0);									
-								txt^.enfants.t[0]^.typeE := couleur;									
-								txt^.enfants.t[0]^.couleur.r:=0;										
-								txt^.enfants.t[0]^.couleur.g:=0;											
-								txt^.enfants.t[0]^.couleur.b:=0;
+		end;
+
+		//Boucle dans les enfants de panel2
+		for i:= 3 to panel2^.enfants.taille-1 do
+		begin
+			if panel2^.enfants.t[i]^.valeur = '1' then 
+			begin 		
+				case i of 
+					3 :
+					begin
+						txt := panel2^.enfants.t[3];
+						txt^.enfants.taille := 0;
 						
+						ajouter_enfant(txt^.enfants);	
+						txt^.enfants.t[0]^.etat.x := 10; //pos							
+						txt^.enfants.t[0]^.etat.y := 15; //pos										
+						txt^.enfants.t[0]^.etat.w := 2;
+						txt^.enfants.t[0]^.etat.h := 20;									
+						txt^.enfants.t[0]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[0]^.etat.w, txt^.enfants.t[0]^.etat.h, 32, 0, 0, 0, 0);									
+						txt^.enfants.t[0]^.typeE := couleur;									
+						txt^.enfants.t[0]^.couleur.r:=0;										
+						txt^.enfants.t[0]^.couleur.g:=0;											
+						txt^.enfants.t[0]^.couleur.b:=0;
 						
-								if SDL_WaitEvent(@event_sdl) = 1 then
-								begin
-								case event_sdl.type_ of
-									
-									SDL_KEYDOWN : 
-									begin
-										writeln('ok');
-										//pseudo := pseudo + Chr(event_sdl.key.keysym.sym);
-										//	writeln('pseudo : ', pseudo);
-									end;
-							
-									end;
-								end;
-								
-								{actif1 := True;
-								j:=0;
-								while actif1 do
-								begin
-									event_clavier := SDL_GetKeyState(NIL);
-									for lettre := SDLK_a to SDLK_z do
-									begin
-										//writeln(lettre);
-										if event_clavier[lettre] = SDL_PRESSED then
-										begin
-											pseudo := pseudo + Chr(event_clavier[lettre]);
-											writeln('pseudo : ',pseudo);
-										end;
-									j:=j+1;
-									end;
-								end;}
-								
-								{while actif do
-								begin
-									while SDL_PollEvent(@event_sdl) = 1 do
-									begin
-										case event_sdl.type_ of
-										
-											SDL_KEYDOWN:
-											begin
-												if event_sdl.key.keysym.sym = SDLK_KP_ENTER then 
-												begin
-													actif := False
-												end
-												else
-												begin
-													pseudo := pseudo + SDL_GetKeyName(event_sdl.key.keysym.sym);
-													writeln(pseudo);
-												end;
-											end;
-											
-										end;
-									end;
-								end;
-								
-								txt^.enfants.t[0]^.typeE := texte;
-								txt^.enfants.t[0]^.valeur := pseudo;
-								txt^.enfants.t[0]^.police := TTF_OpenFont('arial.ttf',18);}
-								
-							end;
-							
-							4 : 
-							begin
-								
-								panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := 'Rouge'#0;
-								
-							//	panel2^.enfants.t[panel2^.enfants.taille-4]^.couleur.r := 55;
-							//	panel2^.enfants.t[panel2^.enfants.taille-4]^.couleur.g := 122;
-							//	panel2^.enfants.t[panel2^.enfants.taille-4]^.couleur.b := 221;
-							end; 	
-							
-							5 : 
-							begin
-								panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := 'Vert'#0;
-							
-							end;
+						ajouter_enfant(txt^.enfants);
+						txt^.enfants.t[1]^.etat.x := 15; //pos							
+						txt^.enfants.t[1]^.etat.y := 12; //pos																				
+						txt^.enfants.t[1]^.typeE := texte;					
+						txt^.enfants.t[1]^.police := TTF_OpenFont('arial.ttf',20);		
+						txt^.enfants.t[1]^.valeur := pseudo;
+						txt^.enfants.t[1]^.couleur.r:=0;										
+						txt^.enfants.t[1]^.couleur.g:=0;											
+						txt^.enfants.t[1]^.couleur.b:=0;
+					
+					end;
+					
+					4 :
+					begin
+						if (actuel-1 >= 0) and (actuel-1<=2) then
+						begin
+							actuel := actuel-1;
+							panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
 						end;
-				end;	
+					end; 	
+					
+					5 : 
+					begin
+						if (actuel+1 >= 0) and (actuel+1<=2) then
+						begin
+							actuel := actuel+1;
+							panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+						end;
+					
+					end;
+				end;
 			end;
+		end;
 		frame_afficher(fenetre);		
 		SDL_FLip(fenetre.surface);
 		end;
-	
 	end;
-	
 	//config.circuit.nom:='Monza';
 	//config.circuit.chemin:='pathToMonza';
 	//config.nbTour:= 3;
 	//config.mode:= True;
 	//jeu_partie(config, fenetre);
 
-end;
+
 
 procedure score(var fenetre: T_UI_ELEMENT);
 begin
@@ -806,9 +719,8 @@ end;
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
-
+	
 begin
-		
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=197;
 	fenetre.couleur.g:=197;
@@ -817,12 +729,10 @@ begin
 	fenetre.enfants.taille := 0;
 	
 	ajouter_enfant(fenetre.enfants);
-	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/background1.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
 	ajouter_enfant(fenetre.enfants);
-	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150; 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/logo1.png'); 
@@ -830,22 +740,17 @@ begin
 	
 	
 	ajouter_enfant(fenetre.enfants);
-
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/jouerbutton0.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
 	ajouter_enfant(fenetre.enfants);
-	
-
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 650;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=IMG_Load('menu/buttons/scoresbutton0.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
 	
 	ajouter_enfant(fenetre.enfants);
-	
-	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 775;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/tutorielbutton0.png');
@@ -853,8 +758,6 @@ begin
 	
 	
 	ajouter_enfant(fenetre.enfants);
-	
-	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 90; 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 900;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton0.png'); 
@@ -868,17 +771,16 @@ begin
 		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
-			
-			SDL_QUITEV : actif:=False;
-			
-			SDL_MOUSEMOTION: 
+				
+				SDL_QUITEV : actif:=False;
+				
+				SDL_MOUSEMOTION: 
 				begin
 					writeln( '  X: ', event_sdl.motion.x, '   Y: ', event_sdl.motion.y,
 					' dX: ', event_sdl.motion.xrel, '   dY: ', event_sdl.motion.yrel );
 							
 					
-					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)) then
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-4]^, event_sdl.motion.x, event_sdl.motion.y) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton2.png');
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x := 65;
@@ -894,8 +796,7 @@ begin
 					end;			
 					
 					
-					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h)) then
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton2.png');
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x := 65;
@@ -913,8 +814,7 @@ begin
 					end;			
 					
 					
-					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h)) then
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-2]^, event_sdl.motion.x, event_sdl.motion.y) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton2.png');
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x := 65;
@@ -932,8 +832,7 @@ begin
 					end;
 					
 					
-					if ((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)) then
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton2.png');
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 65;
@@ -949,67 +848,63 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
 						
 					end;						
-                end;
-                
-                
-			SDL_MOUSEBUTTONDOWN :
+				end;
+					
+					
+				SDL_MOUSEBUTTONDOWN :
 				begin
 					writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
 							
-					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.h)))
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
-								fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton1.png');
-								frame_afficher(fenetre);
-								SDL_FLip(fenetre.surface);
-								Sleep(300);
-								jeu_menu(fenetre);
-								//actif:=False;
-						end;
-					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
-								fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton1.png');
-								frame_afficher(fenetre);
-								SDL_FLip(fenetre.surface);
-								Sleep(300);
-								score(fenetre);
-							//	actif:=False;	
-						end;	
-					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.h))) 
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
-								fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton1.png');
-								frame_afficher(fenetre);
-								SDL_FLip(fenetre.surface);
-								Sleep(300);
-								//tutoriel(fenetre);
-								//actif:=False;	
-						end;
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-4]^, event_sdl.motion.x, event_sdl.motion.y)
+						and (event_sdl.button.state = SDL_PRESSED)
+						and (event_sdl.button.button = 1) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('menu/buttons/jouerbutton1.png');
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						Sleep(300);
+						jeu_menu(fenetre);
+						//actif:=False;
+					end;
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)
+						and (event_sdl.button.state = SDL_PRESSED)
+						and (event_sdl.button.button = 1) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := IMG_Load('menu/buttons/scoresbutton1.png');
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						Sleep(300);
+						score(fenetre);
+						//actif:=False;	
+					end;
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-2]^, event_sdl.motion.x, event_sdl.motion.y)
+						and (event_sdl.button.state = SDL_PRESSED)
+						and (event_sdl.button.button = 1) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton1.png');
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						Sleep(300);
+						//tutoriel(fenetre);
+						//actif:=False;	
+					end;
 					
-					if (((event_sdl.motion.x > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x) and (event_sdl.motion.x < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w)) 
-						and ((event_sdl.motion.y > fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y) and (event_sdl.motion.y < fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y + fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h)))
-						and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
-						begin
-								fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton1.png');
-								frame_afficher(fenetre);
-								SDL_FLip(fenetre.surface);
-								Sleep(300);
-								actif:=False;	
-						end;
-				
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)
+						and (event_sdl.button.state = SDL_PRESSED)
+						and (event_sdl.button.button = 1) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/buttons/quitterbutton1.png');
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						Sleep(300);
+						actif:=False;	
+					end;
 				end;
 			end;
 		end;	
 		frame_afficher(fenetre);
 		SDL_FLip(fenetre.surface);
 	end;
-	//SDL_Delay(5000);
-	
-	
 end;
 
 function lancement(): T_UI_ELEMENT; //Init SDL, fenetre(nom, surface, taille), TTF
@@ -1021,8 +916,11 @@ begin
 		TTF_Init();
 		lancement.surface := SDL_SetVideoMode(C_UI_FENETRE_WIDTH, C_UI_FENETRE_HEIGHT, 32, SDL_RESIZABLE or SDL_HWSURFACE or SDL_DOUBLEBUF);
 		if lancement.surface <> NIL then
-			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL)
-		else 
+		begin
+			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL);
+			lancement.etat.x:=0;
+			lancement.etat.y:=0;
+		end else
 		begin
 			writeln('Erreur setVideoMode');
 		end;
@@ -1040,3 +938,5 @@ begin
 	
 	TTF_Quit();
 end.
+
+//Pointeurs pour surnom => mieux ?
