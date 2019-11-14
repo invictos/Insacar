@@ -270,7 +270,7 @@ begin
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.b :=0;
 end;
 
-procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
+procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
 	infoPartie: T_GAMEPLAY;
 begin
@@ -469,11 +469,13 @@ begin
 			begin
 				writeln( 'Mouse button pressed : Button index : ',event_sdl.button.button);
 				
+				
 				if isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)
 					and (event_sdl.button.state = SDL_PRESSED)
 					and (event_sdl.button.button = 1) then
 				begin
 					Sleep(200);
+					write('test');
 					actif:=False;
 				end;
 				
@@ -635,7 +637,7 @@ end;
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
-	
+	config: T_CONFIG;
 begin
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=197;
@@ -801,8 +803,13 @@ begin
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
 						Sleep(300);
-						//tutoriel(fenetre);
-						//actif:=False;	
+						//temp Hack
+						config.circuit.nom:='Demo';
+						config.circuit.chemin:='./circuits/first.png'#0;
+						config.nbTour:= 3;
+						config.mode:=True;
+						jeu_partie(config, fenetre);
+						//actif:=False;
 					end;
 					
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)
