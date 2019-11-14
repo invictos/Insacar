@@ -5,7 +5,6 @@ uses sdl, sdl_ttf;
 
 type
 
-	
 	T_PHYSIQUE_TABLEAU = record
 		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;

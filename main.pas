@@ -23,6 +23,7 @@ begin
 	case element.typeE of
 		couleur:
 		begin
+			SDL_SetAlpha(element.surface, SDL_SRCALPHA, element.couleur.unused);
 			SDL_FillRect(element.surface, NIL, SDL_MapRGB(element.surface^.format, element.couleur.r, element.couleur.g, element.couleur.b));
 		end;
 		texte:
@@ -210,6 +211,7 @@ begin
 	enfants.t[enfants.taille]^.couleur.r:=0;
 	enfants.t[enfants.taille]^.couleur.g:=0;
 	enfants.t[enfants.taille]^.couleur.b:=0;
+	enfants.t[enfants.taille]^.couleur.unused:=255; //Hack alpha
 	enfants.t[enfants.taille]^.physique:=NIL;
 	enfants.t[enfants.taille]^.enfants.taille:=0;
 	enfants.t[enfants.taille]^.enfants.t:=NIL;
@@ -260,6 +262,19 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
 	//fin boucle
 	//test
+	
+	ajouter_enfant(fenetre.enfants);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.g:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.b:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.unused:=128;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=150;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=75;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
+	
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.taille := 0;
 	ajouter_enfant(infoPartie.joueurs.t[0].voiture.ui^.enfants);
 	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.typeE := texte;
