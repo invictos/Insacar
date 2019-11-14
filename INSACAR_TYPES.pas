@@ -4,6 +4,8 @@ interface
 uses sdl, sdl_ttf;
 
 type
+
+	
 	T_PHYSIQUE_TABLEAU = record
 		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;
@@ -25,7 +27,7 @@ type
 		surface: PSDL_SURFACE;
 		rsurface: PSDL_SURFACE;
 		typeE:(null, image, texte, couleur);
-		valeur: AnsiString;
+		valeur : String;
 		couleur: TSDL_Color;
 		police: PTTF_Font;
 		physique: ^T_PHYSIQUE_ELEMENT;
