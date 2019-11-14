@@ -40,6 +40,10 @@ type
 			last: LongInt;
 			dt: Double;
 		end;
+		hud: record
+			vitesse: ^T_UI_ELEMENT;
+			temps_tour: ^T_UI_ELEMENT;
+		end;
 		config: ^T_CONFIG;
 		joueurs : record
 			t: ^T_JOUEUR;
