@@ -1,8 +1,9 @@
 program demo;
-uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, dos, sysutils;
+
+uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils;
 
 const
-	C_REFRESHRATE = 60; {FPS}
+	C_REFRESHRATE = 90; {FPS} // TEST COMMIT
 	C_UI_FENETRE_WIDTH = 1600;
 	C_UI_FENETRE_HEIGHT = 900;
 	//test
@@ -17,7 +18,7 @@ const
 
 procedure frame_afficher_low(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: SDL_Rect);
 var i : Integer;
-	s: ansiString;
+		s : ansiString;
 begin
 	case element.typeE of
 		couleur:
@@ -64,11 +65,10 @@ begin
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
 		fenetre.enfants.t[0]^.etat.x := Round(-infoPartie.joueurs.t[i].voiture.physique^.x);
 		fenetre.enfants.t[0]^.etat.y := Round(-infoPartie.joueurs.t[i].voiture.physique^.y);
-		
 	end;
 end;
 
-procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);
+procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 begin
 	afficher_camera(infoPartie, fenetre);
 	afficher_hud(fenetre);
@@ -76,6 +76,7 @@ end;
 
 procedure course_gameplay(var infoPartie: T_GAMEPLAY);
 begin
+infoPartie.joueurs.t[0].voiture.ui^.enfants.t[0]^.valeur:=IntToStr(Round(infoPartie.joueurs.t[0].voiture.physique^.a));
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
@@ -86,7 +87,7 @@ begin
 			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 			physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 			physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
-			writeln('Physique:',i,'/',physique.t[i]^.x,'+',physique.t[i]^.y);
+			//writeln('Physique:',i,'/',physique.t[i]^.x,'+',physique.t[i]^.y);
 		end;
 end;
 
@@ -109,7 +110,7 @@ begin
 		
 	if event_clavier[SDLK_RIGHT] = SDL_PRESSED then
 		infoPartie.joueurs.t[0].voiture.physique^.a := infoPartie.joueurs.t[0].voiture.physique^.a - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
-	writeln('DR:',infoPartie.joueurs.t[0].voiture.physique^.dr);
+	//writeln('DR:',infoPartie.joueurs.t[0].voiture.physique^.dr);
 end;
 
 procedure course_arrivee(var infoPartie; var fenetre: T_UI_ELEMENT);
@@ -129,7 +130,7 @@ begin
 	while actif do
 	begin
 		infoPartie.temps.dt:=(SDL_GetTicks()-infoPartie.temps.last)/1000;
-		writeln('DT: ',infoPartie.temps.dt);
+		//writeln('DT: ',infoPartie.temps.dt);
 		infoPartie.temps.last := SDL_GetTicks();
 		
 		timer[0]:=SDL_GetTicks();
@@ -147,7 +148,6 @@ begin
 		
 		course_afficher(infoPartie, physique, fenetre);
 		timer[6]:=SDL_GetTicks();
-		
 		frame_afficher(fenetre);
 		timer[7]:=SDL_GetTicks();
 		
