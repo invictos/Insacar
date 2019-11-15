@@ -29,7 +29,7 @@ begin
 		texte:
 		begin
 			s:= element.valeur;
-			element.surface := TTF_RenderText_Solid(element.police, Pchar(s), element.couleur);
+			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
 		end;
 		image:
 		begin
@@ -831,10 +831,10 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton1.png');
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
-						Sleep(300);
+						Sleep(25);
 						//temp Hack
 						config.circuit.nom:='Demo';
-						config.circuit.chemin:='./circuits/first.png'#0;
+						config.circuit.chemin:='./circuits/first.png';
 						config.nbTour:= 3;
 						config.mode:=True;
 						jeu_partie(config, fenetre);
