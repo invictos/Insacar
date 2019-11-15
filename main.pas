@@ -28,7 +28,7 @@ begin
 		texte:
 		begin
 			s:= element.valeur;
-			element.surface := TTF_RenderText_Solid(element.police, Pchar(s), element.couleur);
+			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
 		end;
 		image:
 		begin
@@ -297,7 +297,8 @@ var event_sdl: TSDL_Event;
 	tabSkin, tabCircuit : array [0..2] of String;
 	
 begin
-
+	pseudo := '';
+	
 	actuel:=1;
 	
 	tabSkin[0] := 'Bleu';
@@ -438,7 +439,28 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 80;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_button05.png'); 
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := image;
+			
+			txt := panel2^.enfants.t[panel2^.enfants.taille-1];
+			txt^.enfants.taille := 0;
 		
+			ajouter_enfant(txt^.enfants);	
+			txt^.enfants.t[0]^.etat.x := 10; 				
+			txt^.enfants.t[0]^.etat.y := 15; 									
+			txt^.enfants.t[0]^.etat.w := 2;
+			txt^.enfants.t[0]^.etat.h := 20;									
+			txt^.enfants.t[0]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[0]^.etat.w, txt^.enfants.t[0]^.etat.h, 32, 0, 0, 0, 0);									
+			txt^.enfants.t[0]^.typeE := couleur;
+			txt^.enfants.t[0]^.couleur.r := 255;
+			txt^.enfants.t[0]^.couleur.g := 255;
+			txt^.enfants.t[0]^.couleur.b := 255;
+			
+			ajouter_enfant(txt^.enfants);
+			txt^.enfants.t[1]^.etat.x := 15; //pos							
+			txt^.enfants.t[1]^.etat.y := 12; //pos																				
+			txt^.enfants.t[1]^.typeE := texte;					
+			txt^.enfants.t[1]^.police := TTF_OpenFont('arial.ttf',20);		
+			txt^.enfants.t[1]^.valeur := pseudo;
+			
 		ajouter_enfant(panel2^.enfants);
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 250; 
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
@@ -452,24 +474,14 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := image;
 	
 	
-	for i:=4 downto 1 do
-	begin
-		panel1^.enfants.t[panel1^.enfants.taille-i]^.valeur := '0';
-	end;
-		
-	for i:=3 downto 1 do
-	begin
-		panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur := '0';
-	end;
-	
 	actif := True;
-	pseudo := '';
+	
 	
 	
 	while actif do
 	begin
 		
-		for i:=4 downto 1 do
+		{for i:=4 downto 1 do
 		begin
 			panel1^.enfants.t[panel1^.enfants.taille-i]^.valeur := '0';
 		end;
@@ -477,7 +489,7 @@ begin
 		for i:=3 downto 1 do
 		begin
 			panel2^.enfants.t[panel2^.enfants.taille-i]^.valeur := '0';
-		end;
+		end;}
 	
 	
 		if SDL_PollEvent(@event_sdl) = 1 then
@@ -574,7 +586,6 @@ begin
 			begin
 				if panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur = '1' then
 				begin
-				
 					event_clavier := SDL_GetKeyState(NIL);
 						
 					case event_sdl.key.keysym.sym of 
@@ -583,7 +594,7 @@ begin
 														
 						SDLK_BACKSPACE : Delete(pseudo,Length(pseudo),1);
 						
-						SDLK_q : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
+						{SDLK_q : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
 								 else pseudo := pseudo + 'a';
 														
 						SDLK_a : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Q'			
@@ -591,12 +602,12 @@ begin
 								
 						SDLK_w : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Z'
 							   	 else pseudo := pseudo + 'z';
-								
+																													A METTRE SI VOUS ETES SUR WINDOWS
 						SDLK_z : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'W'
 								 else pseudo := pseudo + 'w';
 								
 						SDLK_SEMICOLON : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'M'	
-										 else pseudo := pseudo + 'm';
+										 else pseudo := pseudo + 'm';}
 										 			
 					else
 					begin
@@ -610,8 +621,46 @@ begin
 			end;
 		end;
 		
+		//writeln(panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur);
+		
 		//Boucle dans les enfants de panel1
-		for i:= 4 to panel1^.enfants.taille-1 do
+		
+		
+		if  panel1^.enfants.t[4]^.valeur = '1' then
+		begin
+			panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := '1 vs 1';
+			panel1^.enfants.t[4]^.valeur := '0';
+		end;
+
+		if  panel1^.enfants.t[5]^.valeur = '1' then
+		begin
+			panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := 'Contre-la-montre';
+			panel1^.enfants.t[5]^.valeur := '0';
+		end;
+		
+		if  panel1^.enfants.t[6]^.valeur = '1' then
+		begin
+			if (actuel-1 >= 0) and (actuel-1<=2) then
+			begin
+				actuel := actuel-1;
+				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
+			end;					
+			panel1^.enfants.t[6]^.valeur := '0'
+		end;
+		
+		if  panel1^.enfants.t[7]^.valeur = '1' then
+		begin
+			if (actuel+1 >= 0) and (actuel+1<=2) then
+			begin
+				actuel := actuel+1;
+				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
+			end;
+			panel1^.enfants.t[7]^.valeur := '0'
+		end;			
+		
+		
+		
+		{for i:= 4 to panel1^.enfants.taille-1 do
 		begin
 			if panel1^.enfants.t[i]^.valeur = '1' then 
 			begin 		
@@ -620,7 +669,7 @@ begin
 					begin
 						panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := '1 vs 1';
 					end;
-					5 :
+					5 : 
 					begin
 						panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := 'Contre-la-montre';
 					end;
@@ -642,10 +691,51 @@ begin
 					end;
 				end;
 			end;
-		end;
+		end;}
 
 		//Boucle dans les enfants de panel2
-		for i:= 3 to panel2^.enfants.taille-1 do
+		
+		if panel2^.enfants.t[3]^.valeur = '1' then 
+		begin
+			if(SDL_GetTicks() MOD 5) = 0 then
+			begin							
+				txt^.enfants.t[0]^.couleur.r:=0;										
+				txt^.enfants.t[0]^.couleur.g:=0;											
+				txt^.enfants.t[0]^.couleur.b:=0;
+			end 
+			else
+			begin
+				txt^.enfants.t[0]^.couleur.r:=255;										
+				txt^.enfants.t[0]^.couleur.g:=255;											
+				txt^.enfants.t[0]^.couleur.b:=255;
+			end;
+			panel2^.enfants.t[3]^.valeur := '0';
+		end;
+		
+		if panel2^.enfants.t[4]^.valeur = '1' then 
+		begin
+			if (actuel-1 >= 0) and (actuel-1<=2) then
+			begin
+				actuel := actuel-1;
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+			end;
+		panel2^.enfants.t[4]^.valeur := '0';
+		end;
+		
+		
+		if panel2^.enfants.t[5]^.valeur = '1' then 
+		begin
+			if (actuel+1 >= 0) and (actuel+1<=2) then
+			begin
+				actuel := actuel+1;
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+			end;
+			panel2^.enfants.t[5]^.valeur := '0'; 
+		end;
+		
+		
+		
+		{for i:= 3 to panel2^.enfants.taille-1 do
 		begin
 			if panel2^.enfants.t[i]^.valeur = '1' then 
 			begin 		
@@ -661,10 +751,20 @@ begin
 						txt^.enfants.t[0]^.etat.w := 2;
 						txt^.enfants.t[0]^.etat.h := 20;									
 						txt^.enfants.t[0]^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, txt^.enfants.t[0]^.etat.w, txt^.enfants.t[0]^.etat.h, 32, 0, 0, 0, 0);									
-						txt^.enfants.t[0]^.typeE := couleur;									
-						txt^.enfants.t[0]^.couleur.r:=0;										
-						txt^.enfants.t[0]^.couleur.g:=0;											
-						txt^.enfants.t[0]^.couleur.b:=0;
+						txt^.enfants.t[0]^.typeE := couleur;
+						
+						if(SDL_GetTicks() MOD 5) = 0 then
+						begin							
+							txt^.enfants.t[0]^.couleur.r:=0;										
+							txt^.enfants.t[0]^.couleur.g:=0;											
+							txt^.enfants.t[0]^.couleur.b:=0;
+						end else
+						begin
+							txt^.enfants.t[0]^.couleur.r:=255;										
+							txt^.enfants.t[0]^.couleur.g:=255;											
+							txt^.enfants.t[0]^.couleur.b:=255;
+						end;
+					
 						
 						ajouter_enfant(txt^.enfants);
 						txt^.enfants.t[1]^.etat.x := 15; //pos							
@@ -675,6 +775,8 @@ begin
 						txt^.enfants.t[1]^.couleur.r:=0;										
 						txt^.enfants.t[1]^.couleur.g:=0;											
 						txt^.enfants.t[1]^.couleur.b:=0;
+						
+						panel2^.enfants.t[i]^.valeur := '0';
 					
 					end;
 					
@@ -698,7 +800,7 @@ begin
 					end;
 				end;
 			end;
-		end;
+		end;}
 		frame_afficher(fenetre);		
 		SDL_FLip(fenetre.surface);
 		end;
