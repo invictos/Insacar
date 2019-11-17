@@ -68,7 +68,7 @@ type
 	T_CONFIG = record
 		circuit : record
 			nom: String;
-			chemin: String;
+			chemin: ansiString;
 		end;
 		nbTour: Integer;
 		mode: boolean;
