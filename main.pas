@@ -290,22 +290,29 @@ end;
 procedure jeu_menu(fenetre: T_UI_ELEMENT);
 var event_sdl: TSDL_Event;
 	panel1, panel2, panel3, txt, champTxt, txt3, champTxt3: P_UI_ELEMENT;
-	actuel: Integer;
+	actuelCircuit, actuelSkin: Integer;
 	actif: Boolean;
 	pseudo, tempPseudo : String;
 	event_clavier : PUInt8;
-	tabSkin, tabCircuit : array [0..2] of String;
+	tabCircuit : array [0..2] of String;
+	tabSkin : array [0..2] of PSDL_Surface;
 	config : T_CONFIG;
+	j1 : T_JOUEUR;
 	
 begin
 	pseudo := '';
 	tempPseudo:= '';
 	
-	actuel:=1;
-	
-	tabSkin[0] := 'Bleu';
+	actuelCircuit :=1;
+	actuelSkin :=1;
+	{tabSkin[0] := 'Bleu';
 	tabSkin[1] := 'Rouge';
-	tabSkin[2] := 'Vert';
+	tabSkin[2] := 'Vert';}
+	
+	tabSkin[0] := IMG_Load('voiture.png');
+	tabSkin[1] := IMG_Load('voiture2.png');
+	tabSkin[2] := IMG_Load('formule1.png');
+	
 
 	tabCircuit[0] := 'Monza';
 	tabCircuit[1] := 'Monaco';
@@ -318,9 +325,15 @@ begin
 	fenetre.enfants.taille:=0;
 	
 	ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 50;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 825;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/blue_sliderLeft.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 45;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/back-button.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
+	
+	ajouter_enfant(fenetre.enfants);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 200;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 525;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('circuits/firstmini.png'); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
 	ajouter_enfant(fenetre.enfants);
@@ -365,7 +378,7 @@ begin
 		
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
-		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := tabCircuit[actuel];
+		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := tabCircuit[actuelCircuit];
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 355;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y := 250;
@@ -427,14 +440,17 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;	
 		
 		ajouter_enfant(panel2^.enfants);
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := texte;
+		{panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := texte;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.valeur := tabSkin[actuel];
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 365;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 250;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.r :=0;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.g :=0;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;}
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 348;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 245;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.surface := tabSkin[actuelSkin];
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := image;
+			
 		
 		ajouter_enfant(panel2^.enfants);																	
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 300;                                         
@@ -515,9 +531,9 @@ begin
 		
 		ajouter_enfant(panel3^.enfants);
 		panel3^.enfants.t[panel3^.enfants.taille-1]^.typeE := texte;
-		panel3^.enfants.t[panel3^.enfants.taille-1]^.valeur := tabSkin[actuel];
+	//	panel3^.enfants.t[panel3^.enfants.taille-1]^.valeur := tabSkin[actuel];
 		panel3^.enfants.t[panel3^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel3^.enfants.t[panel3^.enfants.taille-1]^.etat.x := 365;
+		panel3^.enfants.t[panel3^.enfants.taille-1]^.etat.x := 360;
 		panel3^.enfants.t[panel3^.enfants.taille-1]^.etat.y := 250;
 		panel3^.enfants.t[panel3^.enfants.taille-1]^.couleur.r :=0;
 		panel3^.enfants.t[panel3^.enfants.taille-1]^.couleur.g :=0;
@@ -590,7 +606,7 @@ begin
 				writeln( 'Mouse button pressed : Button index : ',event_sdl.button.button);
 				
 				//Bouton retour
-				if isInElement(fenetre.enfants.t[fenetre.enfants.taille-4]^, event_sdl.motion.x, event_sdl.motion.y)
+				if isInElement(fenetre.enfants.t[fenetre.enfants.taille-5]^, event_sdl.motion.x, event_sdl.motion.y)
 					and (event_sdl.button.state = SDL_PRESSED)
 					and (event_sdl.button.button = 1) then
 				begin
@@ -738,26 +754,53 @@ begin
 			panel1^.enfants.t[5]^.valeur := '0';
 		end;
 		
+		
+{
+		if panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = '1 vs 1' then
+		begin
+			panel3^.typeE := couleur;	
+			panel3^.surface := SDL_CreateRGBSurface(SDL_HWSURFACE, panel3^.etat.w, panel3^.etat.h, 32, 0, 0, 0, 0);
+			panel3^.couleur.r := 243;
+			panel3^.couleur.g := 243;
+			panel3^.couleur.b := 215;
+		end;
+}
+		
+		
 		if  panel1^.enfants.t[6]^.valeur = '1' then
 		begin
-			if (actuel-1 >= 0) and (actuel-1<=2) then
+			if (actuelCircuit-1 >= 0) and (actuelCircuit-1<=2) then
 			begin
-				actuel := actuel-1;
-				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
+				actuelCircuit := actuelCircuit-1;
+				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
 			end;					
 			panel1^.enfants.t[6]^.valeur := '0'
 		end;
 		
 		if  panel1^.enfants.t[7]^.valeur = '1' then
 		begin
-			if (actuel+1 >= 0) and (actuel+1<=2) then
+			if (actuelCircuit+1 >= 0) and (actuelCircuit+1<=2) then
 			begin
-				actuel := actuel+1;
-				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuel];
+				actuelCircuit := actuelCircuit+1;
+				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
 			end;
 			panel1^.enfants.t[7]^.valeur := '0'
 		end;			
 		
+		if tabCircuit[actuelCircuit] = 'Monaco' then
+		begin
+			fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('circuits/firstmini.png');
+		end;
+		
+		if tabCircuit[actuelCircuit] = 'Monza' then
+		begin
+			fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('circuits/demomini.png');
+		end;
+	
+		if tabCircuit[actuelCircuit] = 'Rouen' then
+		begin
+			fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := IMG_Load('formule1.png');
+		end;
 
 		//Test séléction des enfants de panel2
 		
@@ -777,16 +820,17 @@ begin
 			end;
 			
 		champTxt^.enfants.t[0]^.valeur := pseudo;
-		writeln(txt^.enfants.t[0]^.etat.x);
+	//	writeln(txt^.enfants.t[0]^.etat.x);
 		end;
 		
 		
 		if panel2^.enfants.t[4]^.valeur = '1' then 
 		begin
-			if (actuel-1 >= 0) and (actuel-1<=2) then
+			if (actuelSkin-1 >= 0) and (actuelSkin-1<=2) then
 			begin
-				actuel := actuel-1;
-				panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+				actuelSkin := actuelSkin-1;
+			//	panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin];
 			end;
 		panel2^.enfants.t[4]^.valeur := '0';
 		end;
@@ -794,19 +838,20 @@ begin
 		
 		if panel2^.enfants.t[5]^.valeur = '1' then 
 		begin
-			if (actuel+1 >= 0) and (actuel+1<=2) then
+			if (actuelSkin+1 >= 0) and (actuelSkin+1<=2) then
 			begin
-				actuel := actuel+1;
-				panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+				actuelSkin := actuelSkin+1;
+			//	panel2^.enfants.t[panel2^.enfants.taille-4]^.valeur := tabSkin[actuel];
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin];
 			end;
 			panel2^.enfants.t[5]^.valeur := '0'; 
 		end;
-	
+		
 		frame_afficher(fenetre);		
 		SDL_FLip(fenetre.surface);
-		end;
+	end;
 		
-	config.circuit.nom := tabCircuit[actuel];
+	config.circuit.nom := tabCircuit[actuelCircuit];
 	config.circuit.chemin:='pathToMonza';
 	config.nbTour:= 3;
 	
@@ -815,6 +860,8 @@ begin
 	else
 		config.mode := False;
 	
+	
+	j1.nom := pseudo;
 	//jeu_partie(config, fenetre);
 end;
 	
@@ -829,7 +876,6 @@ end;
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
-	
 begin
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=197;
