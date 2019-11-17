@@ -31,6 +31,8 @@ begin
 		begin
 			s:= element.valeur;
 			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
+			if element.enfants.taille <> 0 then
+				etat.x:=etat.x+element.surface^.w;
 		end;
 		image:
 		begin
