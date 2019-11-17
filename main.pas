@@ -65,6 +65,8 @@ begin
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1, 1);
+		SDL_SetAlpha(infoPartie.joueurs.t[i].voiture.ui^.surface, SDL_SRCALPHA , 0);
+		SDL_SetColorKey(infoPartie.joueurs.t[i].voiture.ui^.surface, SDL_SRCCOLORKEY or SDL_RLEACCEL, SDL_MapRGB(infoPartie.joueurs.t[i].voiture.ui^.surface^.format, 255, 255, 255));
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
 		fenetre.enfants.t[0]^.etat.x := -Round(infoPartie.joueurs.t[i].voiture.physique^.x-C_UI_FENETRE_WIDTH/2);
@@ -82,6 +84,14 @@ begin
     get_pixel := pixels[(y * surface^.w )+ (x)];
 end;
 
+function seconde_to_temps(t: LongInt): String;
+var m,s,ms: Integer;
+begin
+	m:= t DIV 60000;
+	s:= (t MOD 60000) DIV 1000;
+	ms:= t MOD 1000;
+	seconde_to_temps := concat(intToStr(m), '.', intToStr(s), '.', intToStr(ms));
+end;
 procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 begin
 	afficher_camera(infoPartie, fenetre);
@@ -91,7 +101,7 @@ end;
 procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface);
 begin
 	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/5)); //Normalement /25 mais physique <> S.I.
-	infoPartie.hud.temps_tour^.valeur:= IntToStr(Round((infoPartie.temps.last-infoPartie.temps.debut)/1000));
+	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
 	SDL_LockSurface(circuit);
 	SDL_GetRgb(get_pixel(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y)) , circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
 	SDL_UnLockSurface(circuit);
@@ -269,7 +279,7 @@ begin
 	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
-	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture.png');
+	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture2.png');
 	infoPartie.joueurs.t[0].voiture.physique^.x := Round(C_UI_FENETRE_WIDTH/2);
 	infoPartie.joueurs.t[0].voiture.physique^.y := Round(C_UI_FENETRE_HEIGHT/2);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
