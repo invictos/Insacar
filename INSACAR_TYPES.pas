@@ -24,6 +24,7 @@ type
 	T_UI_ELEMENT = record
 		etat: SDL_RECT; {dimension / position}
 		surface: PSDL_SURFACE;
+		rsurface: PSDL_SURFACE;
 		typeE:(null, image, texte, couleur);
 		valeur : String;
 		couleur: TSDL_Color;
