@@ -32,8 +32,6 @@ begin
 		begin
 			s:= element.valeur;
 			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
-		//	if element.enfants.taille <> 0 then
-			//	etat.x:=etat.x+element.surface^.w;
 		end;
 		image:
 		begin
@@ -42,6 +40,8 @@ begin
 	etat.x:=etat.x+element.etat.x;
 	etat.y:=etat.y+element.etat.y;
 	SDL_BlitSurface(element.surface, NIL, frame, @etat);
+	if (element.typeE = texte) AND (element.enfants.taille <> 0) AND (element.surface <> NIL) then
+		etat.x:=etat.x + element.surface^.w;
 	for i:=0 to element.enfants.taille-1 do
 	begin
 		frame_afficher_low(element.enfants.t[i]^, frame, etat);
@@ -787,16 +787,8 @@ begin
 					end;
 					end;
 				
-					
-					if length(tempPseudo) < length(pseudo) then
-					begin
-						txt^.enfants.t[0]^.etat.x := txt^.enfants.t[0]^.etat.x + 11;
-					end;
-					
-					if length(tempPseudo) > length(pseudo) then
-					begin
-						txt^.enfants.t[0]^.etat.x := txt^.enfants.t[0]^.etat.x - 11;
-					end;
+			
+
 				end;
 			end;
 			end;
@@ -1131,7 +1123,7 @@ begin
 						SDL_FLip(fenetre.surface);
 						Sleep(300);
 						//tutoriel(fenetre);
-						//actif:=False;	
+						//actif:=False;
 					end;
 					
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)
