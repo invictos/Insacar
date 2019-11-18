@@ -926,13 +926,143 @@ begin
 	j1.nom := pseudo;
 	//jeu_partie(config, fenetre);
 end;
-	
-	
 
-
-procedure score(var fenetre: T_UI_ELEMENT);
+procedure score( fenetre: T_UI_ELEMENT);
+var	event_sdl: TSDL_Event;
+        fichier : Text;
+        i,j,max,k: integer;
+	tabreturn : array [0..2] of PSDL_SURFACE;
+	actif : Boolean;
+        arial,titre : PTTF_Font;
+        recup : array [0..2,0..16] of string;
 begin
+
+	fenetre.couleur.r:=243;
+	fenetre.couleur.g:=243;
+	fenetre.couleur.b:=215;
+
+	fenetre.enfants.taille:=0;
+        titre := TTF_OpenFont('arial.ttf',50);
+        arial := TTF_Openfont('arial.ttf',20);
+	tabreturn[1]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton1.png'));
+	tabreturn[0]:= SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton0.png'));
+	tabreturn[2]:=SDL_DisplayFormat(IMG_Load('menu/buttons/tutorielbutton2.png'));
 	
+	Assign(fichier, 'scorereg.txt');
+	reset(fichier);
+	for k:=1 to 2 do
+	begin
+		ajouter_enfant(fenetre.enfants);                                         //tableau des scores
+		
+		if k=1 then
+			fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 100
+		else
+			fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=800;
+
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 80 ;
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('jeu_menu/grey_panel.png'));
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+		
+		max:=0;
+
+		//interieur des scores tableau
+
+		while (not(Eof(fichier)) and (max<16)) do
+		begin
+			for i:=0 to 2 do
+			begin
+				readln(fichier,recup[i,max]);
+			end;
+			max:= max+1;
+		end;
+
+		for j:=0 to max-1 do
+			begin
+				for i:=0 to 2do
+				begin
+					ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
+					fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.typeE:=texte;
+					fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.x:=((i*200)+40);
+					fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.etat.y := ((j*40)+20);
+					fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.police := arial;
+				end;
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-3]^.valeur:=recup[0,j]  ;
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-2]^.valeur:=recup[1,j] ;
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1]^.valeur:=recup[2,j];
+			end;
+			
+			For i:=0 to 2 do                                                   //titre des colonnes
+			begin
+				ajouter_enfant(fenetre.enfants);
+
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE:= texte;
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.x + ((i*200)+40));
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:= (fenetre.enfants.t[fenetre.enfants.taille-2-i]^.etat.y-40);
+				fenetre.enfants.t[fenetre.enfants.taille-1]^.police:= titre;
+			end;
+			fenetre.enfants.t[fenetre.enfants.taille-3]^.valeur :='Pseudo';
+			fenetre.enfants.t[fenetre.enfants.taille-2]^.valeur :='Date';
+			fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur :='Record';
+			
+	end;
+
+	ajouter_enfant(fenetre.enfants);           //bouton retour
+
+
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1300;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=tabreturn[0] ;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
+
+	close(fichier);
+
+	actif := True;
+
+	while actif do
+	begin
+		while SDL_PollEvent(@event_sdl) = 1 do
+		begin
+			case event_sdl.type_ of
+
+				SDL_QUITEV : actif:=False;
+
+				SDL_MOUSEMOTION :
+				begin
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface :=tabreturn[2];
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1275;
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+					end
+					else
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabreturn[0];
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 1300;
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+					end;
+				end;
+				
+				SDL_MOUSEBUTTONDOWN :
+				begin
+					writeln( 'Mouse button pressed : Button index : ', event_sdl.button.button );
+					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)
+						and (event_sdl.button.state = SDL_PRESSED)
+						and (event_sdl.button.button = 1) then
+					begin
+						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabreturn[1];
+						frame_afficher(fenetre);
+						SDL_FLip(fenetre.surface);
+						Sleep(300);
+						actif:=False;
+					end;
+				end;
+			end;
+			frame_afficher(fenetre);
+			SDL_FLip(fenetre.surface);
+		end;
+	end;
 end;
 
 procedure menu(var fenetre: T_UI_ELEMENT);
