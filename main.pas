@@ -9,7 +9,7 @@ const
 	//test
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.2; // kg.s^(-1)
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1;
-	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 0.5;
+	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 2;
 	
 	C_PHYSIQUE_VOITURE_ACCELERATION_AVANT = 5.6; // m.s^(-2)
 	C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE = 12;// m.s^(-2)
@@ -100,19 +100,25 @@ end;
 
 procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface);
 begin
-	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/5)); //Normalement /25 mais physique <> S.I.
+	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
 	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
-	SDL_LockSurface(circuit);
+	//SDL_LockSurface(circuit);
 	SDL_GetRgb(get_pixel(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y)) , circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
-	SDL_UnLockSurface(circuit);
+	//SDL_UnLockSurface(circuit);
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
 var i : Integer;
+	c : TSDL_Color;
 begin
 	for i:=0 to physique.taille-1 do
 		begin
-			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
+			SDL_GetRGB(get_pixel(infoPartie.map, Round(physique.t[i]^.x), Round(physique.t[i]^.y)), infoPartie.map^.format, @c.r, @c.g, @c.b);
+			writeln(concat(intToStr(c.r),'/',intToStr(c.g),'/',intToStr(c.b)));
+			if(c.r=57) AND (c.g=181) AND (c.b=74) then
+				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
+			else
+				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 			physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 			physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 			writeln('Physique:',i,'/',Round(physique.t[i]^.x),'+',Round(physique.t[i]^.y));
@@ -266,6 +272,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load(Pchar(infoPartie.config^.circuit.chemin)));
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
+	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	//Joueurs
 	if(infoPartie.config^.mode) then
 		infoPartie.joueurs.taille := 1
