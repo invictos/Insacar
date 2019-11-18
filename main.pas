@@ -1,6 +1,7 @@
 program demo;
 
-uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils;
+
+uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils, strutils;
 
 const
 	C_REFRESHRATE = 90; {FPS} // TEST COMMIT
@@ -9,6 +10,7 @@ const
 	//test
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.2; // kg.s^(-1)
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1;
+	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 2;
 	
 	C_PHYSIQUE_VOITURE_ACCELERATION_AVANT = 5.6; // m.s^(-2)
 	C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE = 12;// m.s^(-2)
@@ -23,12 +25,15 @@ begin
 	case element.typeE of
 		couleur:
 		begin
+			SDL_SetAlpha(element.surface, SDL_SRCALPHA, element.couleur.unused);
 			SDL_FillRect(element.surface, NIL, SDL_MapRGB(element.surface^.format, element.couleur.r, element.couleur.g, element.couleur.b));
 		end;
 		texte:
 		begin
 			s:= element.valeur;
 			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
+			if element.enfants.taille <> 0 then
+				etat.x:=etat.x+element.surface^.w;
 		end;
 		image:
 		begin
@@ -60,34 +65,64 @@ var i : Integer;
 begin
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
-		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1.0, 1);
+		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.couleur, infoPartie.joueurs.t[i].voiture.physique^.a, 1, 1);
+		SDL_SetAlpha(infoPartie.joueurs.t[i].voiture.ui^.surface, SDL_SRCALPHA , 0);
+		SDL_SetColorKey(infoPartie.joueurs.t[i].voiture.ui^.surface, SDL_SRCCOLORKEY or SDL_RLEACCEL, SDL_MapRGB(infoPartie.joueurs.t[i].voiture.ui^.surface^.format, 255, 255, 255));
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
-		fenetre.enfants.t[0]^.etat.x := Round(-infoPartie.joueurs.t[i].voiture.physique^.x);
-		fenetre.enfants.t[0]^.etat.y := Round(-infoPartie.joueurs.t[i].voiture.physique^.y);
+		fenetre.enfants.t[0]^.etat.x := -Round(infoPartie.joueurs.t[i].voiture.physique^.x-C_UI_FENETRE_WIDTH/2);
+		fenetre.enfants.t[0]^.etat.y := -Round(infoPartie.joueurs.t[i].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2);
 	end;
 end;
 
+function get_pixel(surface: PSDL_Surface; x,y: Integer): Uint32;
+var pixels : ^Uint32;
+begin
+    //Convert the pixels to 32 bit
+    pixels := surface^.pixels;
+    
+    //Get the requested pixel
+    get_pixel := pixels[(y * surface^.w )+ (x)];
+end;
+
+function seconde_to_temps(t: LongInt): String;
+var m,s,ms: Integer;
+begin
+	m:= t DIV 60000;
+	s:= (t MOD 60000) DIV 1000;
+	ms:= t MOD 1000;
+	seconde_to_temps := concat(intToStr(m), '.', intToStr(s), '.', intToStr(ms));
+end;
 procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 begin
 	afficher_camera(infoPartie, fenetre);
 	afficher_hud(fenetre);
 end;
 
-procedure course_gameplay(var infoPartie: T_GAMEPLAY);
+procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface);
 begin
-infoPartie.joueurs.t[0].voiture.ui^.enfants.t[0]^.valeur:=IntToStr(Round(infoPartie.joueurs.t[0].voiture.physique^.a));
+	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
+	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
+	//SDL_LockSurface(circuit);
+	SDL_GetRgb(get_pixel(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y)) , circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
+	//SDL_UnLockSurface(circuit);
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
 var i : Integer;
+	c : TSDL_Color;
 begin
 	for i:=0 to physique.taille-1 do
 		begin
-			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
+			SDL_GetRGB(get_pixel(infoPartie.map, Round(physique.t[i]^.x), Round(physique.t[i]^.y)), infoPartie.map^.format, @c.r, @c.g, @c.b);
+			writeln(concat(intToStr(c.r),'/',intToStr(c.g),'/',intToStr(c.b)));
+			if(c.r=57) AND (c.g=181) AND (c.b=74) then
+				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
+			else
+				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 			physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 			physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
-			//writeln('Physique:',i,'/',physique.t[i]^.x,'+',physique.t[i]^.y);
+			writeln('Physique:',i,'/',Round(physique.t[i]^.x),'+',Round(physique.t[i]^.y));
 		end;
 end;
 
@@ -142,7 +177,7 @@ begin
 		timer[4]:=SDL_GetTicks();
 		
 		
-		course_gameplay(infoPartie);
+		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
 		timer[5]:=SDL_GetTicks();
 		
 		
@@ -210,6 +245,7 @@ begin
 	enfants.t[enfants.taille]^.couleur.r:=0;
 	enfants.t[enfants.taille]^.couleur.g:=0;
 	enfants.t[enfants.taille]^.couleur.b:=0;
+	enfants.t[enfants.taille]^.couleur.unused:=255; //Hack alpha
 	enfants.t[enfants.taille]^.physique:=NIL;
 	enfants.t[enfants.taille]^.enfants.taille:=0;
 	enfants.t[enfants.taille]^.enfants.t:=NIL;
@@ -218,35 +254,32 @@ begin
 	enfants.taille:=enfants.taille+1;
 end;
 
-procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU;var fenetre: T_UI_ELEMENT);
+procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
 	fenetre.enfants.taille:=0;
 	physique.taille:=0;
-	
+
 	//Fond ecran
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=19;
 	fenetre.couleur.g:=200;
 	fenetre.couleur.b:=209;
-	
 	//Load Map
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur := 'background';
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load(@infoPartie.config^.circuit.chemin[1]));
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load(Pchar(infoPartie.config^.circuit.chemin)));
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 0;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 0;
-	
+	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	//Joueurs
 	if(infoPartie.config^.mode) then
 		infoPartie.joueurs.taille := 1
 	else
 		infoPartie.joueurs.taille := 2;
-		
+
 	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
 	//Boucle a faire sur joueurs.t
 	ajouter_physique(physique);
@@ -254,23 +287,47 @@ begin
 	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
-	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture.png');
-	infoPartie.joueurs.t[0].voiture.physique^.x := Round(infoPartie.joueurs.t[0].voiture.couleur^.w / 2);
-	infoPartie.joueurs.t[0].voiture.physique^.y := Round(infoPartie.joueurs.t[0].voiture.couleur^.h / 2);
+	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture2.png');
+	infoPartie.joueurs.t[0].voiture.physique^.x := Round(C_UI_FENETRE_WIDTH/2);
+	infoPartie.joueurs.t[0].voiture.physique^.y := Round(C_UI_FENETRE_HEIGHT/2);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
 	//fin boucle
 	//test
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.taille := 0;
-	ajouter_enfant(infoPartie.joueurs.t[0].voiture.ui^.enfants);
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.typeE := texte;
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.valeur := 'test';
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.r :=0;
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.g :=0;
-	infoPartie.joueurs.t[0].voiture.ui^.enfants.t[infoPartie.joueurs.t[0].voiture.ui^.enfants.taille-1]^.couleur.b :=0;
+
+	//HUD Fond
+	ajouter_enfant(fenetre.enfants);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.g:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.b:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.unused:=128;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=300;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=150;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=0;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
+	//HUD Vitesse
+	ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
+	infoPartie.hud.vitesse:=fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1];
+	infoPartie.hud.vitesse^.typeE := texte;
+	infoPartie.hud.vitesse^.valeur := 'iVitesse';
+	infoPartie.hud.vitesse^.police := TTF_OpenFont('arial.ttf',25);
+	infoPartie.hud.vitesse^.couleur.r :=0;
+	infoPartie.hud.vitesse^.couleur.g :=0;
+	infoPartie.hud.vitesse^.couleur.b :=0;
+	//HUD Temps
+	ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
+	infoPartie.hud.temps_tour:=fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1];
+	infoPartie.hud.temps_tour^.typeE := texte;
+	infoPartie.hud.temps_tour^.valeur := 'iTempsTour';
+	infoPartie.hud.temps_tour^.police := TTF_OpenFont('arial.ttf',25);
+	infoPartie.hud.temps_tour^.couleur.r :=0;
+	infoPartie.hud.temps_tour^.couleur.g :=0;
+	infoPartie.hud.temps_tour^.couleur.b :=0;
+	infoPartie.hud.temps_tour^.etat.y:=30;
 end;
 
-procedure jeu_partie(var config: T_CONFIG; var fenetre: T_UI_ELEMENT);
+procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
 	infoPartie: T_GAMEPLAY;
 begin
@@ -342,7 +399,7 @@ begin
 	panel1^.etat.y := 75;
 	panel1^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
 	panel1^.typeE := image;	
-	
+
 	panel1^.enfants.taille := 0;
 		
 		ajouter_enfant(panel1^.enfants);
@@ -379,6 +436,7 @@ begin
 		ajouter_enfant(panel1^.enfants);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.typeE := texte;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.valeur := tabCircuit[actuelCircuit];
+
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.x := 355;
 		panel1^.enfants.t[panel1^.enfants.taille-1]^.etat.y := 250;
@@ -589,7 +647,6 @@ begin
 	
 	while actif do
 	begin
-	
 		if SDL_PollEvent(@event_sdl) = 1 then
 		begin
 			case event_sdl.type_ of
@@ -613,7 +670,6 @@ begin
 					Sleep(200);
 					actif:=False;
 				end;
-				
 				//Déselectionner le champ pseudo
 				if isInElement(fenetre,event_sdl.motion.x,event_sdl.motion.y) 
 					and (event_sdl.button.state = SDL_PRESSED)
@@ -876,6 +932,7 @@ end;
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
+	config: T_CONFIG;
 begin
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=197;
@@ -1040,9 +1097,14 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := IMG_Load('menu/buttons/tutorielbutton1.png');
 						frame_afficher(fenetre);
 						SDL_FLip(fenetre.surface);
-						Sleep(300);
-						//tutoriel(fenetre);
-						//actif:=False;	
+						Sleep(25);
+						//temp Hack
+						config.circuit.nom:='Demo';
+						config.circuit.chemin:='./circuits/first.png';
+						config.nbTour:= 3;
+						config.mode:=True;
+						jeu_partie(config, fenetre);
+						//actif:=False;
 					end;
 					
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)
