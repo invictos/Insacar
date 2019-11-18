@@ -5,7 +5,6 @@ uses sdl, sdl_ttf;
 
 type
 
-	
 	T_PHYSIQUE_TABLEAU = record
 		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;
@@ -42,6 +41,11 @@ type
 			last: LongInt;
 			dt: Double;
 		end;
+		hud: record
+			vitesse: ^T_UI_ELEMENT;
+			temps_tour: ^T_UI_ELEMENT;
+		end;
+		map: PSDL_SURFACE;
 		config: ^T_CONFIG;
 		joueurs : record
 			t: ^T_JOUEUR;
@@ -66,7 +70,7 @@ type
 	T_CONFIG = record
 		circuit : record
 			nom: String;
-			chemin: String;
+			chemin: ansiString;
 		end;
 		nbTour: Integer;
 		mode: boolean;
