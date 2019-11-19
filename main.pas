@@ -653,7 +653,7 @@ begin
 	begin
 		timer[0]:=SDL_GetTicks();
 		
-		if SDL_PollEvent(@event_sdl) = 1 then
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 			
@@ -1135,7 +1135,7 @@ begin
 	while actif do
 	begin	
 		timer[0]:=SDL_GetTicks();	
-		if SDL_PollEvent(@event_sdl) = 1 then
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 				
