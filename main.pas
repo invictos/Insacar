@@ -647,7 +647,7 @@ begin
 	
 	while actif do
 	begin
-		if SDL_PollEvent(@event_sdl) = 1 then
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 			
@@ -981,7 +981,7 @@ begin
 	
 	while actif do
 	begin		
-		if SDL_PollEvent(@event_sdl) = 1 then
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 				
