@@ -651,9 +651,9 @@ begin
 	
 	while actif do
 	begin
-		timer[0]:=SDL_GetTicks();
+		//timer[0]:=SDL_GetTicks();
 		
-		if SDL_PollEvent(@event_sdl) = 1 then
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 			
@@ -905,12 +905,14 @@ begin
 		
 		frame_afficher(fenetre);		
 		SDL_FLip(fenetre.surface);
+{
 		
 		timer[1] := SDL_GetTicks() - timer[0];
 		timer[2] := Round(1000/C_REFRESHRATE)-timer[1];
 		if timer[2] < 0 then timer[2]:=0;
 		SDL_Delay(timer[2]);
 		writeln('Took ',timer[1], 'ms to render. FPS=', 1000 div (SDL_GetTicks() - timer[0]));
+}
 	end;
 		
 	config.circuit.nom := tabCircuit[actuelCircuit];
@@ -966,7 +968,7 @@ begin
 	fenetre.enfants.taille := 0;
 	
 	ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('menu/background1.png'); 
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(IMG_Load('menu/background1.png')); 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;	
 	
 	ajouter_enfant(fenetre.enfants);
@@ -1004,8 +1006,8 @@ begin
 	
 	while actif do
 	begin	
-		timer[0]:=SDL_GetTicks();	
-		if SDL_PollEvent(@event_sdl) = 1 then
+		//timer[0]:=SDL_GetTicks();	
+		while SDL_PollEvent(@event_sdl) = 1 do
 		begin
 			case event_sdl.type_ of
 				
@@ -1022,8 +1024,8 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := tabJouer[2];
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.x := 65;
 						fenetre.enfants.t[fenetre.enfants.taille-4]^.etat.y := 375;
-						frame_afficher(fenetre);
-						SDL_FLip(fenetre.surface);
+						//frame_afficher(fenetre);
+						//SDL_FLip(fenetre.surface);
 					end
 					else
 					begin
@@ -1038,8 +1040,8 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.surface := tabScores[2];
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.x := 65;
 						fenetre.enfants.t[fenetre.enfants.taille-3]^.etat.y := 500;
-						frame_afficher(fenetre);
-						SDL_FLip(fenetre.surface);
+					//	frame_afficher(fenetre);
+					//	SDL_FLip(fenetre.surface);
 					
 					end
 					else
@@ -1056,8 +1058,8 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.surface := tabTutoriel[2];
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.x := 65;
 						fenetre.enfants.t[fenetre.enfants.taille-2]^.etat.y := 625;
-						frame_afficher(fenetre);
-						SDL_FLip(fenetre.surface);
+					//	frame_afficher(fenetre);
+					//	SDL_FLip(fenetre.surface);
 					
 					end
 					else
@@ -1074,8 +1076,8 @@ begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabQuitter[2];
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 65;
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 750;
-						frame_afficher(fenetre);
-						SDL_FLip(fenetre.surface);
+					//	frame_afficher(fenetre);
+					//	SDL_FLip(fenetre.surface);
 					
 					end
 					else
@@ -1139,14 +1141,19 @@ begin
 				end;
 			end;
 		end;	
+		writeln(SDL_GetError());
 		frame_afficher(fenetre);
 		SDL_FLip(fenetre.surface);
 		
+{
+
 		timer[1] := SDL_GetTicks() - timer[0];
 		timer[2] := Round(1000/C_REFRESHRATE)-timer[1];
 		if timer[2] < 0 then timer[2]:=0;
 		SDL_Delay(timer[2]);
 		writeln('Took ',timer[1], 'ms to render. FPS=', 1000 div (SDL_GetTicks() - timer[0]));
+}
+
 	end;
 end;
 
