@@ -75,15 +75,46 @@ begin
 	end;
 end;
 
-function get_pixel(surface: PSDL_Surface; x,y: Integer): Uint32;
+function pixel_get(surface: PSDL_Surface; x,y: Integer): Uint32;
 var pixels : ^Uint32;
 begin
     //Convert the pixels to 32 bit
     pixels := surface^.pixels;
     
     //Get the requested pixel
-    get_pixel := pixels[(y * surface^.w )+ (x)];
+    pixel_get := pixels[(y * surface^.w )+ x];
 end;
+
+function pixel_testLine(surface: PSDL_Surface; x1,y1,x2,y2: Integer; c: array of TSDL_Color; t: Integer): Boolean;
+var x,y,ax,ay,i,l: Integer;
+	pixels : ^Uint32;
+	colors: array[0..3] of Byte;
+	p: ^Byte;
+begin
+	x:=x2-x1;
+	y:=y2-y1;
+	l:=Round(sqrt(x*x+y*y));
+	ax:= Round(x/l);
+	ay:=Round(y/l);
+	x:=x1;
+	y:=y1;
+	pixel_testLine:=false;
+	pixels := surface^.pixels;
+	repeat
+		p:=@pixels[(y * surface^.w )+ x];
+		colors[0]:=p[0];
+		colors[1]:=p[1];
+		colors[2]:=p[2];
+		x:=x+ax;
+		y:=y+ay;
+		for i:=0 to t-1 do
+		begin
+			if (c[i].r=colors[0]) AND (c[i].g=colors[1]) AND (c[i].b=colors[2]) then
+				pixel_testLine:=False;
+		end;
+	until (not pixel_testLine);
+end;
+
 
 function seconde_to_temps(t: LongInt): String;
 var m,s,ms: Integer;
@@ -100,11 +131,25 @@ begin
 end;
 
 procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface);
+var c: array[0..0] of TSDL_Color;
 begin
 	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
 	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
 	//SDL_LockSurface(circuit);
-	SDL_GetRgb(get_pixel(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y)) , circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
+	SDL_GetRgb(pixel_get(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y)) , circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
+	
+	c[0].r:=57;
+	c[0].g:=181;
+	c[0].b:=74;
+	if pixel_testLine(circuit, infoPartie.joueurs.t[0].voiture.physique.x+Round((infoPartie.joueurs.t[0].voiture.couleur^.h*sin(infoPartie.joueurs.t[0].voiture.physique^.a)-infoPartie.joueurs.t[0].voiture.ui^.surface^.w/2)), infoPartie.joueurs.t[0].voiture.physique.y+Round(infoPartie.joueurs.t[0].voiture.ui^.surface^.h/2), infoPartie.joueurs.t[0].voiture.physique.x+Round(infoPartie.joueurs.t[0].voiture.ui^.surface^.w/2), infoPartie.joueurs.t[0].voiture.physique.x+Round((infoPartie.joueurs.t[0].voiture.couleur^.h*sin(infoPartie.joueurs.t[0].voiture.physique^.a))-infoPartie.joueurs.t[0].voiture.ui^.surface^.w/2)), c, 1) then
+	begin
+		infoPartie.hud.temps_tour^.couleur.r:=255;
+		infoPartie.hud.temps_tour^.couleur.g:=0;
+		infoPartie.hud.temps_tour^.couleur.b:=0;
+	end else
+		infoPartie.hud.temps_tour^.couleur.r:=255;
+		infoPartie.hud.temps_tour^.couleur.g:=255;
+		infoPartie.hud.temps_tour^.couleur.b:=255;
 	//SDL_UnLockSurface(circuit);
 end;
 
@@ -114,7 +159,7 @@ var i : Integer;
 begin
 	for i:=0 to physique.taille-1 do
 		begin
-			SDL_GetRGB(get_pixel(infoPartie.map, Round(physique.t[i]^.x), Round(physique.t[i]^.y)), infoPartie.map^.format, @c.r, @c.g, @c.b);
+			SDL_GetRGB(pixel_get(infoPartie.map, Round(physique.t[i]^.x), Round(physique.t[i]^.y)), infoPartie.map^.format, @c.r, @c.g, @c.b);
 			writeln(concat(intToStr(c.r),'/',intToStr(c.g),'/',intToStr(c.b)));
 			if(c.r=57) AND (c.g=181) AND (c.b=74) then
 				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
