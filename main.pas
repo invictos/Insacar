@@ -371,8 +371,8 @@ begin
 	tabSkin[1] := IMG_Load('voiture2.png');
 	tabSkin[2] := IMG_Load('formule1.png');
 
-	tabCircuit[0] := 'Monza';
-	tabCircuit[1] := 'Monaco';
+	tabCircuit[0] := 'first';
+	tabCircuit[1] := 'demo';
 	tabCircuit[2] := 'Rouen';
 	
 	tabMiniCircuit[0] := IMG_Load('circuits/firstmini.png');
@@ -769,11 +769,23 @@ begin
 				end;
 			end;
 			
-			
-				
 			//Gestion saisie pseudo
 			SDL_KEYDOWN : 
 			begin
+			
+				if event_sdl.key.keysym.sym = 13 then
+				begin
+					actif := False;
+					
+					config.circuit.nom := tabCircuit[actuelCircuit];
+					config.circuit.chemin:= 'circuits/'+tabCircuit[actuelCircuit]+'.png';
+					config.nbTour:= 3;
+					config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';	
+					j1.nom := pseudo;
+					
+					jeu_partie(config, fenetre);
+				end;
+				
 				if panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur = '1' then
 				begin
 					tempPseudo := pseudo;
@@ -903,12 +915,12 @@ begin
 		
 		//Affichage circuit miniature en fonction du choix
 		
-		if tabCircuit[actuelCircuit] = 'Monaco' then
+		if tabCircuit[actuelCircuit] = 'first' then
 		begin
 			fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := tabMiniCircuit[0];
 		end;
 		
-		if tabCircuit[actuelCircuit] = 'Monza' then
+		if tabCircuit[actuelCircuit] = 'demo' then
 		begin
 			fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := tabMiniCircuit[1];
 		end;
@@ -1017,14 +1029,8 @@ begin
 
 	end;
 		
-	config.circuit.nom := tabCircuit[actuelCircuit];
-	config.circuit.chemin:='pathToMonza';
-	//config.nbTour:= 3;
 	
-	config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';
 	
-	j1.nom := pseudo;
-	//jeu_partie(config, fenetre);
 end;
 	
 	
