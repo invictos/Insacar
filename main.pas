@@ -325,6 +325,8 @@ begin
 end;
 
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
+var i: Integer;
+	s: ansiString;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
@@ -345,19 +347,23 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
 	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	//Joueurs
-	if(infoPartie.config^.mode) then
-		infoPartie.joueurs.taille := 1
-	else
-		infoPartie.joueurs.taille := 2;
-
-	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
+	
+	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
+	infoPartie.joueurs.t := GetMem(infoPartie.config^.joueurs.taille*SizeOf(T_JOUEUR));
+	
+	for i:=0 to infoPartie.config^.joueurs.taille do
+		infoPartie.joueurs.t[i].config := @infoPartie.config^.joueurs.t[i];
+	
 	//Boucle a faire sur joueurs.t
 	ajouter_physique(physique);
 	ajouter_enfant(fenetre.enfants);
 	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
-	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture2.png');
+	
+	s:=infoPartie.joueurs.t[0].config^.skin;
+	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load(Pchar(s));
+	
 	infoPartie.joueurs.t[0].voiture.physique^.x := 200;
 	infoPartie.joueurs.t[0].voiture.physique^.y := 200;
 	//infoPartie.joueurs.t[0].voiture.physique^.a := 90;
@@ -406,6 +412,7 @@ begin
 	infoPartie.hud.temps_tour^.couleur.g :=0;
 	infoPartie.hud.temps_tour^.couleur.b :=0;
 	infoPartie.hud.temps_tour^.etat.y:=30;
+	
 end;
 
 procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
@@ -434,8 +441,6 @@ var event_sdl: TSDL_Event;
 	event_clavier : PUInt8;
 	tabCircuit : array [0..2] of String;
 	tabSkin : array [0..2] of PSDL_Surface;
-	config : T_CONFIG;
-	j1 : T_JOUEUR;
 	
 begin
 	pseudo := '';
@@ -987,18 +992,6 @@ begin
 		frame_afficher(fenetre);		
 		SDL_FLip(fenetre.surface);
 	end;
-		
-	config.circuit.nom := tabCircuit[actuelCircuit];
-	config.circuit.chemin:='pathToMonza';
-	config.nbTour:= 3;
-	
-	if panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre' then
-		config.mode:= True
-	else
-		config.mode := False;
-	
-	
-	j1.nom := pseudo;
 	//jeu_partie(config, fenetre);
 end;
 	
@@ -1183,7 +1176,10 @@ begin
 						config.circuit.nom:='Demo';
 						config.circuit.chemin:='./circuits/first.png';
 						config.nbTour:= 3;
-						config.mode:=True;
+						config.joueurs.taille:= 1;
+						config.joueurs.t := GetMem(config.joueurs.taille*SizeOf(T_JOUEUR_CONFIG));
+						config.joueurs.t[0].skin:='voiture2.png';
+						config.joueurs.t[0].nom:='Antoine';
 						jeu_partie(config, fenetre);
 						//actif:=False;
 					end;

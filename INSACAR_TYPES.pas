@@ -54,7 +54,7 @@ type
 	end;
 	
 	T_JOUEUR = record
-		nom: String;
+		config: ^T_JOUEUR_CONFIG;
 		voiture: record
 			couleur: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
@@ -67,13 +67,21 @@ type
 		nbTour: Integer;
 	end;
 	
+	T_JOUEUR_CONFIG = record
+		nom: String;
+		skin: String;
+	end;
+	
 	T_CONFIG = record
+		joueurs : record
+			t: ^T_JOUEUR_CONFIG;
+			taille: Integer;
+		end;
 		circuit : record
 			nom: String;
 			chemin: ansiString;
 		end;
 		nbTour: Integer;
-		mode: boolean;
 	end;
 
 implementation
