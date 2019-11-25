@@ -176,11 +176,9 @@ begin
 		frame_physique(physique, infoPartie);
 		timer[4]:=SDL_GetTicks();
 		
-		
 		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
 		timer[5]:=SDL_GetTicks();
-		
-		
+				
 		course_afficher(infoPartie, physique, fenetre);
 		timer[6]:=SDL_GetTicks();
 		frame_afficher(fenetre);
@@ -255,6 +253,7 @@ begin
 end;
 
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
+var i : Integer;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
@@ -275,10 +274,20 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
 	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	//Joueurs
+	
+	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
+	infoPartie.joueurs.t := GetMem(infoPartie.config^.joueurs.taille*SizeOf(T_JOUEUR));
+	
+	for i:= 0 to infoPartie.config^.joueurs.taille do
+		infoPartie.joueurs.t[i].config := @infoPartie.config^.joueurs.t[i];
+		
+	
+{
 	if(infoPartie.config^.mode) then
 		infoPartie.joueurs.taille := 1
 	else
 		infoPartie.joueurs.taille := 2;
+}
 
 	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
 	//Boucle a faire sur joueurs.t
@@ -325,7 +334,20 @@ begin
 	infoPartie.hud.temps_tour^.couleur.g :=0;
 	infoPartie.hud.temps_tour^.couleur.b :=0;
 	infoPartie.hud.temps_tour^.etat.y:=30;
-end;
+	
+	//HUD Pseudo
+	ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
+	infoPartie.hud.pseudo:=fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1];
+	infoPartie.hud.pseudo^.typeE := texte;
+	infoPartie.hud.pseudo^.valeur := infoPartie.config^.joueurs.t[0].nom;
+	infoPartie.hud.pseudo^.police := TTF_OpenFont('arial.ttf',25);
+	infoPartie.hud.pseudo^.couleur.r :=0;
+	infoPartie.hud.pseudo^.couleur.g :=0;
+	infoPartie.hud.pseudo^.couleur.b :=255;
+	infoPartie.hud.pseudo^.etat.y:=50;
+	
+	
+end; 
 
 procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
@@ -355,7 +377,6 @@ var event_sdl: TSDL_Event;
 	tabSkin, tabMiniCircuit : array [0..2] of PSDL_Surface;
 	timer: array[0..2] of LongInt;
 	config : T_CONFIG;
-	j1 : T_JOUEUR;
 	
 begin
 	pseudo := '';
@@ -780,9 +801,11 @@ begin
 					config.circuit.nom := tabCircuit[actuelCircuit];
 					config.circuit.chemin:= 'circuits/'+tabCircuit[actuelCircuit]+'.png';
 					config.nbTour:= 3;
-					config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';	
-					j1.nom := pseudo;
-					
+					config.joueurs.taille := 1;
+					config.joueurs.t := GetMem(config.joueurs.taille*SizeOf(T_JOUEUR_CONFIG));
+					config.joueurs.t[0].skin := 'voiture2.png';
+					config.joueurs.t[0].nom := pseudo;
+				//	config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';		
 					jeu_partie(config, fenetre);
 				end;
 				

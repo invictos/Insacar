@@ -44,6 +44,8 @@ type
 		hud: record
 			vitesse: ^T_UI_ELEMENT;
 			temps_tour: ^T_UI_ELEMENT;
+			debug : ^T_UI_ELEMENT;
+			pseudo : ^T_UI_ELEMENT;  
 		end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG;
@@ -54,7 +56,7 @@ type
 	end;
 	
 	T_JOUEUR = record
-		nom: String;
+		config : ^T_JOUEUR_CONFIG;
 		voiture: record
 			couleur: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
@@ -67,13 +69,21 @@ type
 		nbTour: Integer;
 	end;
 	
+	T_JOUEUR_CONFIG = record
+		nom : String;
+		skin : String;
+	end;
+	
 	T_CONFIG = record
+		joueurs : record
+			t : ^T_JOUEUR_CONFIG;
+			taille : Integer;
+		end;
 		circuit : record
 			nom: String;
 			chemin: ansiString;
 		end;
 		nbTour: Integer;
-		mode: boolean;
 	end;
 
 implementation
