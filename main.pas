@@ -254,6 +254,7 @@ end;
 
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 var i : Integer;
+	s : ansiString;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
@@ -281,7 +282,6 @@ begin
 	for i:= 0 to infoPartie.config^.joueurs.taille do
 		infoPartie.joueurs.t[i].config := @infoPartie.config^.joueurs.t[i];
 		
-	
 {
 	if(infoPartie.config^.mode) then
 		infoPartie.joueurs.taille := 1
@@ -289,17 +289,22 @@ begin
 		infoPartie.joueurs.taille := 2;
 }
 
-	infoPartie.joueurs.t := GetMem(infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
+	
 	//Boucle a faire sur joueurs.t
 	ajouter_physique(physique);
 	ajouter_enfant(fenetre.enfants);
 	infoPartie.joueurs.t[0].voiture.physique := @physique.t[physique.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
-	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load('voiture2.png');
-	infoPartie.joueurs.t[0].voiture.physique^.x := Round(C_UI_FENETRE_WIDTH/2);
-	infoPartie.joueurs.t[0].voiture.physique^.y := Round(C_UI_FENETRE_HEIGHT/2);
+	
+	s := infoPartie.joueurs.t[0].config^.skin;
+	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load(Pchar(s));
+	
+	//writeln('test');
+	infoPartie.joueurs.t[0].voiture.physique^.x := 200;
+	infoPartie.joueurs.t[0].voiture.physique^.y := 200;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
+	writeln('test');
 	//fin boucle
 	//test
 
@@ -315,6 +320,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
+	
 	//HUD Vitesse
 	ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
 	infoPartie.hud.vitesse:=fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1];
@@ -324,6 +330,7 @@ begin
 	infoPartie.hud.vitesse^.couleur.r :=0;
 	infoPartie.hud.vitesse^.couleur.g :=0;
 	infoPartie.hud.vitesse^.couleur.b :=0;
+	
 	//HUD Temps
 	ajouter_enfant(fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants);
 	infoPartie.hud.temps_tour:=fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.t[fenetre.enfants.t[fenetre.enfants.taille-1]^.enfants.taille-1];
@@ -522,8 +529,8 @@ begin
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.couleur.b :=0;	
 		
 		ajouter_enfant(panel2^.enfants);
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 348;
-		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 245;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.x := 370;
+		panel2^.enfants.t[panel2^.enfants.taille-1]^.etat.y := 235;
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.surface := tabSkin[actuelSkin];
 		panel2^.enfants.t[panel2^.enfants.taille-1]^.typeE := image;
 			
@@ -803,9 +810,15 @@ begin
 					config.nbTour:= 3;
 					config.joueurs.taille := 1;
 					config.joueurs.t := GetMem(config.joueurs.taille*SizeOf(T_JOUEUR_CONFIG));
-					config.joueurs.t[0].skin := 'voiture2.png';
+					case actuelSkin of 
+						0 : config.joueurs.t[0].skin := 'voiture.png';
+						1 : config.joueurs.t[0].skin := 'voiture2.png';
+						2 : config.joueurs.t[0].skin := 'formule1.png';
+					end;
+					
+						
 					config.joueurs.t[0].nom := pseudo;
-				//	config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';		
+			//		config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';		
 					jeu_partie(config, fenetre);
 				end;
 				
@@ -1197,7 +1210,8 @@ begin
 				
 					end;
 					
-					
+	//		infoPartie.hud.vitesse^.couleur.r :=0;
+			
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y) then
 					begin
 						fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := tabQuitter[2];
