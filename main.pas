@@ -380,10 +380,9 @@ begin
 
 	infoPartie.joueurs.t[0].voiture.physique^.x := 200;
 	infoPartie.joueurs.t[0].voiture.physique^.y := 200;
-	//infoPartie.joueurs.t[0].voiture.physique^.a := 90;
+
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
 	//fin boucle
-	//test
 	
 	//HUD Fond
 	ajouter_enfant(fenetre.enfants);
