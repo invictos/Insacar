@@ -169,8 +169,10 @@ begin
 		writeln('test1');
 		SDL_GetRgb(pixel_get(circuit, xm, ym), circuit^.format, @infoPartie.hud.vitesse^.couleur.r, @infoPartie.hud.vitesse^.couleur.g, @infoPartie.hud.vitesse^.couleur.b);
 		writeln('test2');
-		infoPartie.hud.debug^.etat.x:=Round(xm-(infoPartie.joueurs.t[0].voiture.physique^.x-C_UI_FENETRE_WIDTH/2));
-		infoPartie.hud.debug^.etat.y:=Round(ym-(infoPartie.joueurs.t[0].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2));
+		//infoPartie.hud.debug^.etat.x:=Round(xm-(infoPartie.joueurs.t[0].voiture.physique^.x-C_UI_FENETRE_WIDTH/2));
+		//infoPartie.hud.debug^.etat.y:=Round(ym-(infoPartie.joueurs.t[0].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2));
+		//infoPartie.hud.debug2^.etat.x:=Round(x2-(infoPartie.joueurs.t[0].voiture.physique^.x-C_UI_FENETRE_WIDTH/2));
+		//infoPartie.hud.debug2^.etat.y:=Round(y2-(infoPartie.joueurs.t[0].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2));
 		writeln('test3');
 		writeln(x1,'/',y1,'//',x2,'/',y2);
 		writeln(infoPartie.joueurs.t[0].voiture.physique^.a);
@@ -303,7 +305,9 @@ begin
 	physique.t[physique.taille]^.r := 0;
 	physique.t[physique.taille]^.dr :=0;
 	
-	Freemem(old, physique.taille*SizeOf(P_PHYSIQUE_ELEMENT));
+	if old<>NIL then
+		Freemem(old, physique.taille*SizeOf(P_PHYSIQUE_ELEMENT));
+	
 	physique.taille:=physique.taille+1;
 end;
 
@@ -311,13 +315,12 @@ procedure ajouter_enfant(var enfants: T_UI_TABLEAU);
 var old: ^P_UI_ELEMENT;
 	i: Integer;
 begin
-	
 	old:=enfants.t;
 	enfants.t := GetMem((enfants.taille+1)*SizeOf(P_UI_ELEMENT));
 	
 	for i:=0 to enfants.taille-1 do
 		enfants.t[i]:=old[i];
-	
+		
 	enfants.t[enfants.taille] := GetMem(SizeOf(T_UI_ELEMENT));
 	enfants.t[enfants.taille]^.etat.x := 0;
 	enfants.t[enfants.taille]^.etat.y := 0;
@@ -334,7 +337,11 @@ begin
 	enfants.t[enfants.taille]^.enfants.taille:=0;
 	enfants.t[enfants.taille]^.enfants.t:=NIL;
 	
-	Freemem(old, enfants.taille*SizeOf(T_UI_ELEMENT));
+	writeln('1');
+	if old<>NIL then
+		Freemem(old, enfants.taille*SizeOf(P_UI_ELEMENT));
+
+	writeln('2');
 	enfants.taille:=enfants.taille+1;
 end;
 
@@ -426,6 +433,15 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
 	infoPartie.hud.debug:=fenetre.enfants.t[fenetre.enfants.taille-1];
 	
+{
+	ajouter_enfant(fenetre.enfants);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=255;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=10;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=10;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
+	infoPartie.hud.debug2:=fenetre.enfants.t[fenetre.enfants.taille-1];
+}
 end;
 
 procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
@@ -1138,9 +1154,6 @@ begin
 
 	end;
 end;
-	
-	
-
 
 procedure score(var fenetre: T_UI_ELEMENT);
 begin
@@ -1150,7 +1163,7 @@ end;
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
-	config: T_CONFIG;
+	config: T_CONFIG; //ATTENTION 123
 begin
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=197;
@@ -1353,12 +1366,13 @@ begin
 	if SDL_Init(SDL_INIT_EVERYTHING) = 0 then
 	begin
 		TTF_Init();
-		lancement.surface := SDL_SetVideoMode(C_UI_FENETRE_WIDTH, C_UI_FENETRE_HEIGHT, 32, SDL_RESIZABLE or SDL_HWSURFACE or SDL_DOUBLEBUF);
+		lancement.surface := SDL_SetVideoMode(C_UI_FENETRE_WIDTH, C_UI_FENETRE_HEIGHT, 32, SDL_HWSURFACE or SDL_DOUBLEBUF);
 		if lancement.surface <> NIL then
 		begin
 			SDL_WM_SetCaption(C_UI_FENETRE_NOM, NIL);
 			lancement.etat.x:=0;
 			lancement.etat.y:=0;
+			lancement.enfants.t:=NIL;
 		end else
 		begin
 			writeln('Erreur setVideoMode');
@@ -1378,4 +1392,3 @@ begin
 	SDL_Quit();
 end.
 
-//Pointeurs pour surnom => mieux ?

@@ -44,6 +44,7 @@ type
 			vitesse: ^T_UI_ELEMENT;
 			temps_tour: ^T_UI_ELEMENT;
 			debug: ^T_UI_ELEMENT;
+			debug2: ^T_UI_ELEMENT;
 		end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG;
