@@ -69,7 +69,7 @@ type
 	
 	T_JOUEUR_CONFIG = record
 		nom: String;
-		skin: String;
+		skin: ansiString;
 	end;
 	
 	T_CONFIG = record

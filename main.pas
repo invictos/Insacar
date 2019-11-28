@@ -338,9 +338,9 @@ begin
 	enfants.taille:=enfants.taille+1;
 end;
 
+
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 var i: Integer;
-	s: ansiString;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
@@ -352,6 +352,7 @@ begin
 	fenetre.couleur.r:=19;
 	fenetre.couleur.g:=200;
 	fenetre.couleur.b:=209;
+	
 	//Load Map
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
@@ -360,14 +361,14 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
 	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
-	//Joueurs
 	
+	//Joueurs
 	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
 	infoPartie.joueurs.t := GetMem(infoPartie.config^.joueurs.taille*SizeOf(T_JOUEUR));
 	
 	for i:=0 to infoPartie.config^.joueurs.taille do
 		infoPartie.joueurs.t[i].config := @infoPartie.config^.joueurs.t[i];
-	
+
 	//Boucle a faire sur joueurs.t
 	ajouter_physique(physique);
 	ajouter_enfant(fenetre.enfants);
@@ -375,16 +376,15 @@ begin
 	infoPartie.joueurs.t[0].voiture.ui := @fenetre.enfants.t[fenetre.enfants.taille-1]^;
 	infoPartie.joueurs.t[0].voiture.ui^.typeE := image;
 	
-	s:=infoPartie.joueurs.t[0].config^.skin;
-	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load(Pchar(s));
-	
+	infoPartie.joueurs.t[0].voiture.couleur := IMG_Load(Pchar(infoPartie.joueurs.t[0].config^.skin));
+
 	infoPartie.joueurs.t[0].voiture.physique^.x := 200;
 	infoPartie.joueurs.t[0].voiture.physique^.y := 200;
 	//infoPartie.joueurs.t[0].voiture.physique^.a := 90;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.physique:=@physique.t[physique.taille-1]^; {UTILISER PHYSIQUE DANS UI ? }
 	//fin boucle
 	//test
-
+	
 	//HUD Fond
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
@@ -417,7 +417,7 @@ begin
 	infoPartie.hud.temps_tour^.couleur.g :=0;
 	infoPartie.hud.temps_tour^.couleur.b :=0;
 	infoPartie.hud.temps_tour^.etat.y:=30;
-	
+
 	//HUD Debug
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
@@ -426,7 +426,6 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=10;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
 	infoPartie.hud.debug:=fenetre.enfants.t[fenetre.enfants.taille-1];
-	
 	
 end;
 
