@@ -28,7 +28,6 @@ type
 		valeur : String;
 		couleur: TSDL_Color;
 		police: PTTF_Font;
-		physique: ^T_PHYSIQUE_ELEMENT;
 		enfants: T_UI_TABLEAU;
 	end;
 	P_UI_ELEMENT = ^T_UI_ELEMENT;
@@ -47,17 +46,17 @@ type
 			debug2: ^T_UI_ELEMENT;
 		end;
 		map: PSDL_SURFACE;
-		config: ^T_CONFIG;
+		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
-			t: ^T_JOUEUR;
+			t: ^T_JOUEUR; //PARTIE
 			taille: Integer;
 		end;
 	end;
 	
 	T_JOUEUR = record
-		config: ^T_JOUEUR_CONFIG;
 		voiture: record
-			couleur: PSDL_SURFACE;
+			chemin: String;
+			surface: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
 			ui: ^T_UI_ELEMENT;
 		end;
@@ -66,21 +65,22 @@ type
 			secteur: array[1..3] of Integer;
 		end;
 		nbTour: Integer;
-	end;
-	
-	T_JOUEUR_CONFIG = record
 		nom: String;
-		skin: ansiString;
 	end;
 	
+	
+	T_CONFIG_JOUEUR = record
+		nom: String;
+		chemin: String;
+	end;
 	T_CONFIG = record
 		joueurs : record
-			t: ^T_JOUEUR_CONFIG;
+			t: ^T_CONFIG_JOUEUR;
 			taille: Integer;
 		end;
 		circuit : record
 			nom: String;
-			chemin: ansiString;
+			chemin: String;
 		end;
 		nbTour: Integer;
 	end;
