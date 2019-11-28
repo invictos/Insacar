@@ -922,13 +922,13 @@ begin
 					writeln(config.circuit.chemin);
 					config.nbTour:= 3;
 					config.joueurs.taille := 1;
-					config.joueurs.t := GetMem(config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
+					GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
 					case actuelSkin of 
 						0 : config.joueurs.t[0].chemin := 'voiture.png';
 						1 : config.joueurs.t[0].chemin := 'voiture2.png';
 						2 : config.joueurs.t[0].chemin := 'formule1.png';
 					end;
-					
+
 						
 					config.joueurs.t[0].nom := pseudo;
 			//		config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';		
@@ -1354,14 +1354,14 @@ begin
 						SDL_FLip(fenetre.surface);
 						Sleep(25);
 						//temp Hack
-						config.circuit.nom:='Demo';
-						config.circuit.chemin:='./circuits/first.png';
-						config.nbTour:= 3;
-						config.joueurs.taille:= 1;
-						config.joueurs.t := GetMem(config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
-						config.joueurs.t[0].chemin:='voiture2.png';
-						config.joueurs.t[0].nom:='Antoine';
-						jeu_partie(config, fenetre);
+							config.circuit.nom:='Demo';
+							config.circuit.chemin:='circuits/first.png';
+							config.nbTour:= 3;
+							config.joueurs.taille:= 1;
+							GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
+							config.joueurs.t[config.joueurs.taille-1].chemin:='voiture2.png';
+							config.joueurs.t[config.joueurs.taille-1].nom:='Antoine';
+							jeu_partie(config, fenetre);
 						//actif:=False;
 					end;
 					
@@ -1412,22 +1412,7 @@ var fenetre : T_UI_ELEMENT;
 	config: T_CONFIG;
 begin
 	fenetre := lancement();
-	
-
-	config.circuit.nom:='Demo';
-	config.circuit.chemin:='circuits/first.png';
-	config.nbTour:= 3;
-	
-	config.joueurs.taille:= 1;
-	GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
-	config.joueurs.t[config.joueurs.taille-1].chemin:='voiture2.png';
-	config.joueurs.t[config.joueurs.taille-1].nom:='Antoine';
-
-
-	
-	jeu_partie(config, fenetre);
-
-	//menu(fenetre);
+	menu(fenetre);
 	TTF_Quit();
 	SDL_Quit();
 end.
