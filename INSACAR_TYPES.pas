@@ -42,8 +42,10 @@ type
 		end;
 		hud: record
 			vitesse: ^T_UI_ELEMENT;
+			vitesse1: ^T_UI_ELEMENT;
 			temps_tour: ^T_UI_ELEMENT;
 			debug: ^T_UI_ELEMENT;
+			pseudo : ^T_UI_ELEMENT;
 		end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG;
