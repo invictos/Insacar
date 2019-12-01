@@ -4,7 +4,23 @@ interface
 uses sdl, sdl_ttf;
 
 type
-
+	T_RENDER_ETAT = record
+		rect: TSDL_Rect;
+		a,o : Byte;
+	end;
+	T_RENDER_STYLE = record
+		enabled, display: Boolean;
+		a : Byte;
+	end;
+	
+	T_HITBOX_COLOR = record
+		data : array of record
+			n: shortint;
+			c: TSDL_Color;
+		end;
+		taille: shortInt;
+	end;
+	
 	T_PHYSIQUE_TABLEAU = record
 		t: ^P_PHYSIQUE_ELEMENT;
 		taille: Integer;
@@ -26,7 +42,8 @@ type
 		surface: PSDL_SURFACE;
 		typeE:(null, image, texte, couleur);
 		valeur : String;
-		couleur: TSDL_Color;
+		couleur: TSDL_COLOR;
+		style: T_RENDER_STYLE;
 		police: PTTF_Font;
 		enfants: T_UI_TABLEAU;
 	end;
@@ -84,7 +101,6 @@ type
 		end;
 		nbTour: Integer;
 	end;
-
 implementation
 begin
 end.
