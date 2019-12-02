@@ -90,6 +90,7 @@ type
 		nom: String;
 		chemin: String;
 	end;
+	
 	T_CONFIG = record
 		joueurs : record
 			t: ^T_CONFIG_JOUEUR;

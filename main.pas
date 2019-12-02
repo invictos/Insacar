@@ -82,6 +82,7 @@ procedure afficher_hud(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
 	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
 	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
+	infoPartie.hud.temps_tour^.couleur := pixel_get(infoPartie.map, Round(infoPartie.joueurs.t[0].voiture.physique^.x) , Round(infoPartie.joueurs.t[0].voiture.physique^.y));
 end;
 
 procedure afficher_camera(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
@@ -112,6 +113,8 @@ procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface)
 var c: array[0..0] of TSDL_Color;
 	p: SDL_Rect;
 	t: ShortInt;
+	a: T_HITBOX_COLOR;
+	i: ShortInt;
 	//x1,x2,y1,y2,xm,ym: Integer;
 begin
 	//infoPartie.hud.vitesse^.couleur := pixel_get(circuit, Round(infoPartie.joueurs.t[0].voiture.physique^.x),Round(infoPartie.joueurs.t[0].voiture.physique^.y));
@@ -155,8 +158,10 @@ begin
 		p.w := infoPartie.joueurs.t[0].voiture.surface^.w;
 		p.h := infoPartie.joueurs.t[0].voiture.surface^.h;
 		writeln('HBDEBUT');
-		hitBox(infoPartie.map, p, infoPartie.joueurs.t[0].voiture.physique^.a, c, t, infoPartie);
+		a := hitBox(infoPartie.map, p, infoPartie.joueurs.t[0].voiture.physique^.a, c, t);
 		writeln('HBFIN');
+		for i:=0 to a.taille-1 do
+			writeln('P',a.data[i].n);
 		//writeln(x1,'/',y1,'//',x2,'/',y2);
 		writeln(infoPartie.joueurs.t[0].voiture.physique^.a);
 

@@ -8,8 +8,7 @@ procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
 procedure ajouter_enfant(var enfants: T_UI_TABLEAU);
 function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
-
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt; ip: T_GAMEPLAY): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 
 implementation
 
@@ -118,19 +117,19 @@ var i: ShortInt;
 begin
 	i:=0;
 	repeat
-		hitBoxInList:= (colors[i].r=c.r) AND (colors[i].g=c.g) AND (colors[i].b=c.b);
+		hitBoxInList := (colors[i].r=c.r) AND (colors[i].g=c.g) AND (colors[i].b=c.b);
 	until (i=t-1) OR (hitBoxInList=True);
 end;
 
 procedure hitBoxAddList(var l: T_HITBOX_COLOR; n: ShortInt; c: TSDL_COLOR);
 begin
 	setLength(l.data, l.taille+1);
-	l.data[0].c:=c;
-	l.data[0].n:=n;
+	l.data[l.taille].c:=c;
+	l.data[l.taille].n:=n;
 	l.taille:=l.taille+1;
 end;
 
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt; ip: T_GAMEPLAY): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 var xm, ym, xt, yt: Integer;
 	sa,ca: Real;
 	i,j,n: ShortInt;
@@ -157,8 +156,8 @@ begin
 	//writeln('HB1F');
 	while i<>3 do
 	begin
-		xt:=xm-i*Round(p.w/2*ca);
-		yt:=ym-i*Round(p.w/2*sa);
+		xt:=xm+i*Round(p.w/2*ca);
+		yt:=ym+i*Round(p.w/2*sa);
 		writeln('HB',n,'/',xt, '//', yt);
 		c:=pixel_get(surface, xt, yt);
 		if hitBoxInList(c, colors, t) then
