@@ -329,8 +329,9 @@ begin
 
         close(fic);
 
+end;}
+begin
 end;
-
 
 
 
@@ -343,8 +344,7 @@ scoreenr(infoPartie);
 end;
 
 procedure course_depart(var fenetre: T_UI_ELEMENT);
-begin
-end;}
+
 begin
 end;
 
