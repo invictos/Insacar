@@ -1,0 +1,5 @@
+Bonjour,
+Les controles de ce jeu sont assez simples a comprendre 
+Pour accelerer appuyez sur espace :
+Pour ralentir/recculer appuyez sur controle :
+pour tourner servez vous des fleches directionnelles :  
