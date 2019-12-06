@@ -62,7 +62,7 @@ type
 			debug: ^T_UI_ELEMENT;
 			debug2: ^T_UI_ELEMENT;
 		end;
-		map: PSDL_SURFACE;
+		map: PSDL_Surface;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
 			t: ^T_JOUEUR; //PARTIE

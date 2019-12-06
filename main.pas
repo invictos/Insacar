@@ -87,19 +87,39 @@ end;
 
 procedure afficher_camera(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var i : Integer;
+	xm,ym,d,z: Integer;
 begin
+	//Map
+	xm:=Round(infoPartie.joueurs.t[0].voiture.physique^.x);
+	ym:=Round(infoPartie.joueurs.t[0].voiture.physique^.y);
+	if infoPartie.joueurs.taille=2 then
+	begin
+		xm:= Round(xm/2+infoPartie.joueurs.t[1].voiture.physique^.x/2);
+		ym:= Round(ym/2+infoPartie.joueurs.t[1].voiture.physique^.y/2);
+		d := Round(sqrt((infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)*(infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)+(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)*(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)));
+		writeln('d:',d);
+	end;
+	
+	fenetre.enfants.t[0]^.etat.x := -Round(xm-C_UI_FENETRE_WIDTH/2);
+	fenetre.enfants.t[0]^.etat.y := -Round(ym-C_UI_FENETRE_HEIGHT/2);
+	
+	if ((d > 1200) and false) then
+	begin
+		z := 1; // A FAIRE
+		fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
+	end;
+	
+	//Joueurs
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
-
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, 1, 1);
-
-		fenetre.enfants.t[0]^.etat.x := -Round(infoPartie.joueurs.t[i].voiture.physique^.x-C_UI_FENETRE_WIDTH/2);
-		fenetre.enfants.t[0]^.etat.y := -Round(infoPartie.joueurs.t[i].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2);
-		
+			
+		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x+fenetre.enfants.t[0]^.etat.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
+		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.joueurs.t[i].voiture.physique^.y+fenetre.enfants.t[0]^.etat.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);		
+{
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
-
-		
+}
 	end;
 end;
 
@@ -290,9 +310,9 @@ begin
 
 	//Fond ecran
 	fenetre.typeE:=couleur;
-	fenetre.couleur.r:=19;
-	fenetre.couleur.g:=200;
-	fenetre.couleur.b:=209;
+	fenetre.couleur.r:=57;
+	fenetre.couleur.g:=181;
+	fenetre.couleur.b:=74;
 	fenetre.style.a:=255;
 	
 	//Load Map
@@ -304,7 +324,8 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.enabled:=False; //Desactive styles ( lag )
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
-	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
+	infoPartie.map := SDL_DisplayFormat(IMG_Load(Pchar(s)));
+	//fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	//Joueurs
 
 	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
