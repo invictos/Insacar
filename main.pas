@@ -288,6 +288,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
 	infoPartie.map := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
+    
 	//Joueurs
 
 	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
@@ -318,7 +319,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.g:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.b:=0;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.unused:=128;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.a :=128;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=300;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=150;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w;
@@ -347,7 +348,7 @@ begin
 	infoPartie.hud.pseudo^.couleur.g :=0;
 	infoPartie.hud.pseudo^.couleur.b :=255;
 	infoPartie.hud.pseudo^.etat.y:=50;	
-	
+	writeln('nom : ', infoPartie.config^.joueurs.t[0].nom);
 	
 	//HUD Fond BasDroite
 	ajouter_enfant(fenetre.enfants);
@@ -355,7 +356,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.g:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.b:=0;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.unused:=128;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.a :=128;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=170;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=50;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w-fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w;
@@ -395,7 +396,7 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.r:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.g:=0;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.b:=0;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.couleur.unused:=128;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.a :=128;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w:=50;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h:=50; 
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=fenetre.surface^.w;
@@ -850,6 +851,7 @@ begin
 					config.nbTour:= 3;
 					config.joueurs.taille := 1;
 					GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
+                    
 					case actuelSkin of 
 						0 : config.joueurs.t[0].chemin := 'voiture.png';
 						1 : config.joueurs.t[0].chemin := 'voiture2.png';
@@ -858,7 +860,6 @@ begin
 
 						
 					config.joueurs.t[0].nom := pseudo;
-			//		config.mode := panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur = 'Contre-la-montre';		
 					jeu_partie(config, fenetre);
 				end;
 				
@@ -900,6 +901,7 @@ begin
 							pseudo := pseudo + Chr(event_sdl.key.keysym.sym);  						
 					end;
 					end;
+                    writeln('pseudo : ',pseudo);
 				end;
 				
 				if panel3^.enfants.t[panel3^.enfants.taille-3]^.valeur = '1' then
