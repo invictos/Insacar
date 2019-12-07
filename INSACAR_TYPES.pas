@@ -57,13 +57,24 @@ type
 			dt: Double;
 		end;
 		hud: record
-			vitesse: P_UI_ELEMENT;
-			vitesse1 : P_UI_ELEMENT;
-			pseudo : P_UI_ELEMENT;
-			temps_tour:P_UI_ELEMENT;
-			debug: P_UI_ELEMENT;
-			debug2: P_UI_ELEMENT;
-		end;
+            circuit_texte :P_UI_ELEMENT;
+            circuit_nom :P_UI_ELEMENT;
+            temps_texte :P_UI_ELEMENT;
+            temps_tour:P_UI_ELEMENT;
+            j1 : P_UI_ELEMENT;
+            pseudo1 : P_UI_ELEMENT;
+			vitesse1_valeur: P_UI_ELEMENT;
+			vitesse1_texte : P_UI_ELEMENT;
+            j2 : P_UI_ELEMENT;
+            pseudo2 : P_UI_ELEMENT;
+            vitesse2_valeur: P_UI_ELEMENT;
+			vitesse2_texte : P_UI_ELEMENT;
+            premier_texte : P_UI_ELEMENT;
+            premier_nom : P_UI_ELEMENT;
+            vitesse : P_UI_ELEMENT;
+            debug :  P_UI_ELEMENT;
+            debug2 :  P_UI_ELEMENT;
+        end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
