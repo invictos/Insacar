@@ -10,6 +10,9 @@ function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
+procedure applyZoom(infoPartie: T_GAMEPLAY; z: Real);
+
+
 
 implementation
 
@@ -198,6 +201,16 @@ end;
 function isSameColor(a,b: TSDL_Color): Boolean;
 begin
 	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
+end;
+
+procedure applyZoom(infoPartie: T_GAMEPLAY; z: Real);
+begin
+	infoPartie.zoom:=z;
+	//Zoom map
+	fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
+	
+	//Zoom joueurs
+
 end;
 
 end.

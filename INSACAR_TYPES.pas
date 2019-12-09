@@ -63,8 +63,11 @@ type
 			secteur: array[1..3] of P_UI_ELEMENT;
 			debug: P_UI_ELEMENT;
 			debug2: P_UI_ELEMENT;
+			
+			global: P_UI_ELEMENT;
 		end;
 		map: PSDL_Surface;
+		zoom: Real;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
 			t: ^T_JOUEUR; //PARTIE
@@ -78,6 +81,8 @@ type
 			surface: PSDL_SURFACE;
 			physique: ^T_PHYSIQUE_ELEMENT;
 			ui: ^T_UI_ELEMENT;
+		end;
+		hud: record
 		end;
 		temps : record
 			secteur: array[0..3] of LongInt;

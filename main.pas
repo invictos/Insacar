@@ -7,7 +7,7 @@ const
 	C_REFRESHRATE = 90; {FPS} // TEST COMMIT
 	C_UI_FENETRE_WIDTH = 1600;
 	C_UI_FENETRE_HEIGHT = 900;
-	//test
+	
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.2; // kg.s^(-1)
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1;
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 5;
@@ -112,7 +112,7 @@ begin
 	fenetre.enfants.t[0]^.etat.x := -Round(xm-C_UI_FENETRE_WIDTH/2);
 	fenetre.enfants.t[0]^.etat.y := -Round(ym-C_UI_FENETRE_HEIGHT/2);
 	
-	if ((d > 1200)) then
+	if ((d > 1200) and false) then
 	begin
 		z := 0.5; // A FAIRE
 		fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
@@ -504,7 +504,7 @@ var event_sdl: TSDL_Event;
 	panel1, panel2, panel3, txt, champTxt, txt3, champTxt3: P_UI_ELEMENT;
 	actuelCircuit, actuelSkin: Integer;
 	actif: Boolean;
-	pseudo, tempPseudo, pseudo2, tempPseudo2 : String;
+	pseudo, pseudo2 : String;
 	event_clavier : PUInt8;
 	tabCircuit : array [0..2] of ansiString;
 	tabSkin, tabMiniCircuit : array [0..2] of PSDL_Surface;
@@ -513,10 +513,8 @@ var event_sdl: TSDL_Event;
 	
 begin
 	pseudo := '';
-	tempPseudo:= '';
 	
 	pseudo2 := '';
-	tempPseudo2 := '';
 	
 	actuelCircuit :=1;
 	actuelSkin :=1;
@@ -951,7 +949,6 @@ begin
 				
 				if panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur = '1' then
 				begin
-					tempPseudo := pseudo;
 					
 					event_clavier := SDL_GetKeyState(NIL);
 						
@@ -991,8 +988,7 @@ begin
 				
 				if panel3^.enfants.t[panel3^.enfants.taille-3]^.valeur = '1' then
 				begin
-					tempPseudo2 := pseudo2;
-					
+									
 					event_clavier := SDL_GetKeyState(NIL);
 						
 					case event_sdl.key.keysym.sym of 
@@ -1423,7 +1419,6 @@ begin
 end;
 
 var fenetre : T_UI_ELEMENT;
-	config: T_CONFIG;
 begin
 	fenetre := lancement();
 	menu(fenetre);
