@@ -56,24 +56,8 @@ type
 			last: LongInt;
 			dt: Double;
 		end;
-		hud: record
-		
+		hud: record	
             temps_tour: P_UI_ELEMENT;
-            
-            j1 : P_UI_ELEMENT;
-            pseudo1 : P_UI_ELEMENT;
-			vitesse1_valeur: P_UI_ELEMENT;
-			vitesse1_texte : P_UI_ELEMENT;
-			
-            j2 : P_UI_ELEMENT;
-            pseudo2 : P_UI_ELEMENT;
-            vitesse2_valeur: P_UI_ELEMENT;
-			vitesse2_texte : P_UI_ELEMENT;
-			
-            premier_texte : P_UI_ELEMENT;
-            premier_nom : P_UI_ELEMENT;
-            vitesse : P_UI_ELEMENT;
-            
             global : P_UI_ELEMENT;
            
         end;
@@ -95,7 +79,7 @@ type
 		hud : record 
 			vitesse : P_UI_ELEMENT;
 			secteur: array[0..3] of P_UI_ELEMENT;
-			
+		end;
 		temps : record
 			secteur: array[0..3] of LongInt;
 			actuel: ShortInt;
