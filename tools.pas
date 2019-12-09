@@ -8,7 +8,8 @@ procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
 procedure ajouter_enfant(var enfants: T_UI_TABLEAU);
 function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
+function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
 
 implementation
 
@@ -112,13 +113,14 @@ begin
 		SDL_UnLockSurface(surface);
 end;
 
-function hitBoxInList(c: TSDL_Color; colors: array of TSDL_Color; t: ShortInt): Boolean;
+function hitBoxInList(c: TSDL_Color; colors: PSDL_Color; t: ShortInt): Boolean;
 var i: ShortInt;
 begin
 	i:=0;
 	repeat
 		hitBoxInList := (colors[i].r=c.r) AND (colors[i].g=c.g) AND (colors[i].b=c.b);
-	until (i=t-1) OR (hitBoxInList=True);
+		i:=i+1;
+	until (i=t) OR (hitBoxInList=True);
 end;
 
 procedure hitBoxAddList(var l: T_HITBOX_COLOR; n: ShortInt; c: TSDL_COLOR);
@@ -129,7 +131,7 @@ begin
 	l.taille:=l.taille+1;
 end;
 
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; var colors: array of TSDL_Color; t: ShortInt): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 var xm, ym, xt, yt: Integer;
 	sa,ca: Real;
 	i,j,n: ShortInt;
@@ -144,9 +146,9 @@ begin
 	
 	xm:=p.x+Round(sa*p.h/2);
 	ym:=p.y-Round(ca*p.h/2);
-	writeln('HB',n,'/',xm, '//', ym);
+	//writeln('HB',n,'/',xm, '//', ym);
 	c:=pixel_get(surface, xm, ym);
-	//writeln('HB2/',c.r,c.g,c.b);
+	//writeln('HB2/',c.r,',',c.g,',',c.b);
 	if hitBoxInList(c, colors, t) then
 	begin
 		//writeln('g');
@@ -158,7 +160,7 @@ begin
 	begin
 		xt:=xm+i*Round(p.w/2*ca);
 		yt:=ym+i*Round(p.w/2*sa);
-		writeln('HB',n,'/',xt, '//', yt);
+		//writeln('HB',n,'/',xt, '//', yt);
 		c:=pixel_get(surface, xt, yt);
 		if hitBoxInList(c, colors, t) then
 			hitBoxAddList(hitBox, n, c);
@@ -168,7 +170,7 @@ begin
 		begin
 			xt:=xt-Round(p.h/4*sa);
 			yt:=yt+Round(p.h/4*ca);
-			writeln('HB',n,'/',xt, '//', yt);
+			//writeln('HB',n,'/',xt, '//', yt);
 			c:=pixel_get(surface, xt, yt);
 			if hitBoxInList(c, colors, t) then
 				hitBoxAddList(hitBox, n, c);
@@ -179,7 +181,7 @@ begin
 	
 	xm:=xm-Round(sa*p.h);
 	ym:=ym+Round(ca*p.h);
-	writeln('HB',n,'/',xm, '//', ym);
+	//writeln('HB',n,'/',xm, '//', ym);
 	c:=pixel_get(surface, xm, ym);
 	if hitBoxInList(c, colors, t) then
 		hitBoxAddList(hitBox, n, c);
@@ -191,6 +193,11 @@ begin
 				and	(x < (element.etat.x + element.surface^.w))
 				and (y > element.etat.y)
 				and (y < (element.etat.y + element.surface^.h));
+end;
+
+function isSameColor(a,b: TSDL_Color): Boolean;
+begin
+	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
 end;
 
 end.

@@ -80,10 +80,21 @@ end;
 
 procedure afficher_hud(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
-	infoPartie.hud.vitesse1_valeur^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5));
-    infoPartie.hud.vitesse2_valeur^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[1].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
+		
+	
+	infoPartie.hud.vitesse1_valeur^.valeur:=Concat(IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)),' km/h');
+	if infoPartie.joueurs.taille =2 then
+		infoPartie.hud.vitesse2_valeur^.valeur:=Concat(IntToStr(Round(-infoPartie.joueurs.t[1].voiture.physique^.dr/2.5)),' km/h'); //Normalement /25 mais physique <> S.I.
+		
 	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
+
 	//infoPartie.hud.temps_tour^.couleur := pixel_get(infoPartie.map, Round(infoPartie.joueurs.t[0].voiture.physique^.x) , Round(infoPartie.joueurs.t[0].voiture.physique^.y));
+{
+	
+	if infoPartie.joueurs.t[0].temps.actuel <> 4 then
+		infoPartie.hud.secteur[infoPartie.joueurs.t[0].temps.actuel]^.valeur := seconde_to_temps(infoPartie.temps.last-infoPartie.joueurs.t[0].temps.secteur[infoPartie.joueurs.t[0].temps.actuel-1]);
+}
+
 end;
 
 procedure afficher_camera(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
@@ -161,28 +172,19 @@ end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
 var i,j : ShortInt;
-	c: array[0..0] of TSDL_Color;
+	c: PSDL_Color;
 	hb : T_HITBOX_COLOR;
 	p : SDL_Rect;
 	t : ShortInt;
 begin
 	for i:=0 to physique.taille-1 do
 		begin
-{
-			c := TSDL_Color(pixel_get(infoPartie.map, Round(physique.t[i]^.x), Round(physique.t[i]^.y))); 
-			if(c.r=57) AND (c.g=181) AND (c.b=74) then
-				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
-			else
-				physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
-				
-			physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
-			physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
-		end;
-}
+		t:=1;
+		GetMem(c, t*SizeOf(TSDL_Color));
+		
 		c[0].r:=57;
 		c[0].g:=181;
 		c[0].b:=74;
-		t:=1;
 		
 		p.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x);
 		p.y := Round(infoPartie.joueurs.t[i].voiture.physique^.y);
@@ -193,8 +195,9 @@ begin
 		writeln('hb ',hb.taille);
 		for j:=0 to hb.taille-1 do
 		begin
-			if(hb.data[j].n = 2) OR (hb.data[j].n = 1) OR (hb.data[j].n = 7) then
+			if(hb.data[j].n = 2) OR (hb.data[j].n = 1) OR (hb.data[j].n = 7) AND isSameColor(hb.data[j].c,c[0]) then
 			begin
+				writeln(t,'STOP', hb.data[j].c.r);
 				infoPartie.joueurs.t[i].voiture.physique^.dr := 0;
 			end;
 		end;
@@ -206,6 +209,7 @@ begin
 			
 		physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 		physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
+		FreeMem(c, t*SizeOf(TSDL_Color));
 	end;
 end;
 
@@ -246,11 +250,11 @@ begin
 	end;
 end;
 
-procedure course_arrivee(var infoPartie; var fenetre: T_UI_ELEMENT);
+procedure course_arrivee(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
 end;
 
-procedure course_depart(var fenetre: T_UI_ELEMENT);
+procedure course_depart(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var i : Integer;
 begin
 
@@ -258,6 +262,9 @@ begin
     begin
          fenetre.enfants.t[i]^.style.display := False;
     end;
+    
+    fenetre.enfants.t[0]^.etat.x := -Round(infoPartie.joueurs.t[0].voiture.physique^.x-C_UI_FENETRE_WIDTH/2);
+	fenetre.enfants.t[0]^.etat.y := -Round(infoPartie.joueurs.t[0].voiture.physique^.y-C_UI_FENETRE_HEIGHT/2);
     
     //Feu
     ajouter_enfant(fenetre.enfants);
@@ -293,35 +300,35 @@ procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TAB
 var actif: boolean;
 	timer: array[0..7] of LongInt; {départ, boucle, delay,user,physique,gameplay,courseAfficher,frameAfficher}
 begin
-	course_depart(fenetre);
+	course_depart(infoPartie, fenetre);
 	actif:=true;
 	while actif do
 	begin
 		infoPartie.temps.dt:=(SDL_GetTicks()-infoPartie.temps.last)/1000;
-		//writeln('DT: ',infoPartie.temps.dt);
+		writeln('DT: ',infoPartie.temps.dt);
 		infoPartie.temps.last := SDL_GetTicks();
-		//write('1');
+		write('1');
 		timer[0]:=SDL_GetTicks();
 		
 		course_user(infoPartie, actif);
 		timer[3]:=SDL_GetTicks();
-		//write('2');
+		write('2');
 		frame_physique(physique, infoPartie);
 		timer[4]:=SDL_GetTicks();
 		
-		//write('3');
+		write('3');
 		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
 		timer[5]:=SDL_GetTicks();
 		
-		//write('4');
+		write('4');
 		course_afficher(infoPartie, physique, fenetre);
 		timer[6]:=SDL_GetTicks();
-		//write('5');
+		write('5');
 		frame_afficher(fenetre);
 		timer[7]:=SDL_GetTicks();
-		//write('6');
+		write('6');
 		SDL_Flip(fenetre.surface);
-		//writeln('7');
+		writeln('7');
 		timer[1] := SDL_GetTicks() - timer[0];
 		timer[2] := Round(1000/C_REFRESHRATE)-timer[1];
 		if timer[2] < 0 then timer[2]:=0;
@@ -335,6 +342,9 @@ end;
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 var i: Integer;
 	s: ansiString;
+	 circuit_texte :P_UI_ELEMENT;
+     circuit_nom :P_UI_ELEMENT;
+     temps_texte :P_UI_ELEMENT;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
@@ -388,7 +398,7 @@ begin
 	infoPartie.config^.joueurs.taille:=0;
    
 	//fin boucle
-	
+																								//CHANGER TYPES AVEC LES TRUCS QUI DEPENDENT DES JOUEURS...
 	//HUD Fond HautDroite
 	ajouter_enfant(fenetre.enfants);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := couleur;
@@ -630,7 +640,7 @@ var event_sdl: TSDL_Event;
 	panel1, panel2, panel3, txt, champTxt, txt3, champTxt3: P_UI_ELEMENT;
 	actuelCircuit, actuelSkin1, actuelSkin2: Integer;
 	actif: Boolean;
-	pseudo, tempPseudo, pseudo2, tempPseudo2 : String;
+	pseudo,pseudo2 : String;
 	event_clavier : PUInt8;
 	tabCircuit : array [0..2] of ansiString;
 	tabSkin, tabMiniCircuit : array [0..2] of PSDL_Surface;
@@ -639,10 +649,8 @@ var event_sdl: TSDL_Event;
 	
 begin
 	pseudo := '';
-	tempPseudo:= '';
 	
 	pseudo2 := '';
-	tempPseudo2 := '';
 	
 	actuelCircuit :=1;
 	actuelSkin1 :=1;
@@ -1067,7 +1075,7 @@ begin
                     else
                         config.joueurs.taille := 2;
                     
-                        
+                    writeln('MODE', config.joueurs.taille);
                     GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
                 
 					case actuelSkin1 of 
@@ -1090,7 +1098,6 @@ begin
 				
 				if panel2^.enfants.t[panel2^.enfants.taille-3]^.valeur = '1' then
 				begin
-					tempPseudo := pseudo;
 					
 					event_clavier := SDL_GetKeyState(NIL);
 						
@@ -1131,7 +1138,6 @@ begin
 				
 				if panel3^.enfants.t[panel3^.enfants.taille-3]^.valeur = '1' then
 				begin
-					tempPseudo2 := pseudo2;
 					
 					event_clavier := SDL_GetKeyState(NIL);
 						
@@ -1563,7 +1569,6 @@ begin
 end;
 
 var fenetre : T_UI_ELEMENT;
-	config: T_CONFIG;
 begin
 	fenetre := lancement();
 	menu(fenetre);

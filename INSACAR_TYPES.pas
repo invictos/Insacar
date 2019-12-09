@@ -57,23 +57,25 @@ type
 			dt: Double;
 		end;
 		hud: record
-            circuit_texte :P_UI_ELEMENT;
-            circuit_nom :P_UI_ELEMENT;
-            temps_texte :P_UI_ELEMENT;
-            temps_tour:P_UI_ELEMENT;
+		
+            temps_tour: P_UI_ELEMENT;
+            
             j1 : P_UI_ELEMENT;
             pseudo1 : P_UI_ELEMENT;
 			vitesse1_valeur: P_UI_ELEMENT;
 			vitesse1_texte : P_UI_ELEMENT;
+			
             j2 : P_UI_ELEMENT;
             pseudo2 : P_UI_ELEMENT;
             vitesse2_valeur: P_UI_ELEMENT;
 			vitesse2_texte : P_UI_ELEMENT;
+			
             premier_texte : P_UI_ELEMENT;
             premier_nom : P_UI_ELEMENT;
             vitesse : P_UI_ELEMENT;
-            debug :  P_UI_ELEMENT;
-            debug2 :  P_UI_ELEMENT;
+            
+            global : P_UI_ELEMENT;
+           
         end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
@@ -90,9 +92,13 @@ type
 			physique: ^T_PHYSIQUE_ELEMENT;
 			ui: ^T_UI_ELEMENT;
 		end;
+		hud : record 
+			vitesse : P_UI_ELEMENT;
+			secteur: array[0..3] of P_UI_ELEMENT;
+			
 		temps : record
-			debut: Integer;
-			secteur: array[1..3] of Integer;
+			secteur: array[0..3] of LongInt;
+			actuel: ShortInt;
 		end;
 		nbTour: Integer;
 		nom: String;
