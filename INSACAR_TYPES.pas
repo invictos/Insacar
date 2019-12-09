@@ -11,6 +11,7 @@ type
 	T_RENDER_STYLE = record
 		enabled, display: Boolean;
 		a : Byte;
+		zoom: Real;
 	end;
 	
 	T_HITBOX_COLOR = record
@@ -57,10 +58,11 @@ type
 			dt: Double;
 		end;
 		hud: record
-			vitesse: ^T_UI_ELEMENT;
-			temps_tour: ^T_UI_ELEMENT;
-			debug: ^T_UI_ELEMENT;
-			debug2: ^T_UI_ELEMENT;
+			vitesse: P_UI_ELEMENT;
+			temps_tour: P_UI_ELEMENT;
+			secteur: array[1..3] of P_UI_ELEMENT;
+			debug: P_UI_ELEMENT;
+			debug2: P_UI_ELEMENT;
 		end;
 		map: PSDL_Surface;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
@@ -78,8 +80,8 @@ type
 			ui: ^T_UI_ELEMENT;
 		end;
 		temps : record
-			debut: Integer;
-			secteur: array[1..3] of Integer;
+			secteur: array[0..3] of LongInt;
+			actuel: ShortInt;
 		end;
 		nbTour: Integer;
 		nom: String;
