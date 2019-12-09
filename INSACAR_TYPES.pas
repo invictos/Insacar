@@ -59,7 +59,6 @@ type
 		hud: record	
             temps_tour: P_UI_ELEMENT;
             global : P_UI_ELEMENT;
-           
         end;
 		map: PSDL_SURFACE;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
