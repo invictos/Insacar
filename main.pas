@@ -82,7 +82,7 @@ procedure afficher_hud(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
 	infoPartie.hud.vitesse^.valeur:=IntToStr(Round(-infoPartie.joueurs.t[0].voiture.physique^.dr/2.5)); //Normalement /25 mais physique <> S.I.
 	infoPartie.hud.temps_tour^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
-	infoPartie.hud.temps_tour^.couleur := pixel_get(infoPartie.map, Round(infoPartie.joueurs.t[0].voiture.physique^.x) , Round(infoPartie.joueurs.t[0].voiture.physique^.y));
+	infoPartie.hud.temps_tour^.couleur := pixel_get(infoPartie.map.base, Round(infoPartie.joueurs.t[0].voiture.physique^.x) , Round(infoPartie.joueurs.t[0].voiture.physique^.y));
 	
 {
 	infoPartie.hud.secteur[1]^.valeur := seconde_to_temps(infoPartie.joueurs.t[0].temps.secteur[1]-infoPartie.joueurs.t[0].temps.debut);
@@ -112,17 +112,21 @@ begin
 	fenetre.enfants.t[0]^.etat.x := -Round(xm-C_UI_FENETRE_WIDTH/2);
 	fenetre.enfants.t[0]^.etat.y := -Round(ym-C_UI_FENETRE_HEIGHT/2);
 	
-	if ((d > 1200) and false) then
+
+{
+	if ((d > 1200)) then
 	begin
 		z := 0.5; // A FAIRE
-		fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
+		fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map.base, 0, z, 1);
 		writeln(fenetre.enfants.t[0]^.surface^.w,':',fenetre.enfants.t[0]^.surface^.h);
 	end;
+}
+
 	
 	//Joueurs
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
-		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, 1, 1);
+		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, infoPartie.zoom, 1);
 			
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x+fenetre.enfants.t[0]^.etat.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.joueurs.t[i].voiture.physique^.y+fenetre.enfants.t[0]^.etat.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);		
@@ -173,7 +177,7 @@ begin
 		p.h := infoPartie.joueurs.t[0].voiture.surface^.h;
 		
 		writeln('HBDEBUT');
-		a := hitBox(infoPartie.map, p, infoPartie.joueurs.t[0].voiture.physique^.a, c, t);
+		a := hitBox(infoPartie.map.base, p, infoPartie.joueurs.t[0].voiture.physique^.a, c, t);
 		writeln('HBFIN');
 		for i:=0 to a.taille-1 do
 		begin
@@ -234,14 +238,14 @@ begin
 		p.w := infoPartie.joueurs.t[i].voiture.surface^.w-10;
 		p.h := infoPartie.joueurs.t[i].voiture.surface^.h-10;
 		
-		hb := hitBox(infoPartie.map, p, infoPartie.joueurs.t[i].voiture.physique^.a, c, t);
+		hb := hitBox(infoPartie.map.base, p, infoPartie.joueurs.t[i].voiture.physique^.a, c, t);
 		writeln('hb ',hb.taille);
 		for j:=0 to hb.taille-1 do
 		begin
 			if(hb.data[j].n = 2) OR (hb.data[j].n = 1) OR (hb.data[j].n = 7) AND isSameColor(hb.data[j].c,c[0]) then
 			begin
 				writeln(t,'STOP', hb.data[j].c.r);
-				infoPartie.joueurs.t[i].voiture.physique^.dr := 0;
+				//infoPartie.joueurs.t[i].voiture.physique^.dr := 0;
 			end;
 		end;
 		
@@ -275,6 +279,10 @@ begin
 	{$ENDIF}
 	if event_clavier[SDLK_TAB] = SDL_PRESSED then
 		infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE*25;
+	
+	if event_clavier[SDLK_G] = SDL_PRESSED then
+		applyZoom(infoPartie, 0.5);
+		
 		
 	if event_clavier[SDLK_R] = SDL_PRESSED then
 		infoPartie.joueurs.t[0].voiture.physique^.a := infoPartie.joueurs.t[0].voiture.physique^.a + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
@@ -357,7 +365,7 @@ begin
 	infoPartie.temps.fin:=0;
 	infoPartie.temps.last:=0;
 	infoPartie.temps.dt:=0;
-	
+	infoPartie.zoom:=1;
 	fenetre.enfants.taille:=0;
 	physique.taille:=0;
 
@@ -377,8 +385,11 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.enabled:=False; //Desactive styles ( lag )
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
-	infoPartie.map := SDL_DisplayFormat(IMG_Load(Pchar(s)));
-	//fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
+	
+	infoPartie.map.base := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
+	infoPartie.map.current := @fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
+
+
 	//Joueurs
 
 	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;

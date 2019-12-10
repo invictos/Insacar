@@ -66,7 +66,10 @@ type
 			
 			global: P_UI_ELEMENT;
 		end;
-		map: PSDL_Surface;
+		map: record
+			base : PSDL_Surface;
+			current : ^PSDL_Surface;
+		end;
 		zoom: Real;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
@@ -79,8 +82,9 @@ type
 		voiture: record
 			chemin: String;
 			surface: PSDL_SURFACE;
+			current: ^PSDL_Surface;
 			physique: ^T_PHYSIQUE_ELEMENT;
-			ui: ^T_UI_ELEMENT;
+			ui: P_UI_ELEMENT;
 		end;
 		hud: record
 		end;
