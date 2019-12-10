@@ -57,7 +57,7 @@ type
 			dt: Double;
 		end;
 		hud: record	
-            temps_tour: P_UI_ELEMENT;
+            temps : P_UI_ELEMENT;
             global : P_UI_ELEMENT;
         end;
 		map: PSDL_SURFACE;
@@ -78,6 +78,7 @@ type
 		hud : record 
 			vitesse : P_UI_ELEMENT;
 			secteur: array[0..3] of P_UI_ELEMENT;
+			temps_tour: P_UI_ELEMENT;
 		end;
 		temps : record
 			secteur: array[0..3] of LongInt;
