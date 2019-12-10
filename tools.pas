@@ -205,11 +205,13 @@ end;
 
 procedure applyZoom(infoPartie: T_GAMEPLAY; z: Real);
 begin
+{
 	infoPartie.zoom:=z;
 	//Zoom map
 	fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
 	
 	//Zoom joueurs
+}
 
 end;
 

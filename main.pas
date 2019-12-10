@@ -507,7 +507,8 @@ var event_sdl: TSDL_Event;
 	pseudo, pseudo2 : String;
 	event_clavier : PUInt8;
 	tabCircuit : array [0..2] of ansiString;
-	tabSkin, tabMiniCircuit : array [0..2] of PSDL_Surface;
+	tabMiniCircuit : array [0..2] of PSDL_Surface;
+	tabSkin: array[0..4] of PSDL_Surface;
 	timer: array[0..2] of LongInt;
 	config : T_CONFIG;
 	
@@ -520,8 +521,10 @@ begin
 	actuelSkin :=1;
 	
 	tabSkin[0] := IMG_Load('voiture.png');
-	tabSkin[1] := IMG_Load('voiture2.png');
-	tabSkin[2] := IMG_Load('formule1.png');
+	tabSkin[1] := IMG_Load('voitures/rouge.png');
+	tabSkin[2] := IMG_Load('voitures/jaune.png');
+	tabSkin[3] := IMG_Load('voitures/bleu.png');
+	tabSkin[4] := IMG_Load('formule1.png');
 
 	tabCircuit[0] := 'first';
 	tabCircuit[1] := 'demo';
@@ -937,10 +940,12 @@ begin
 					GetMem(config.joueurs.t, config.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
 					case actuelSkin of 
 						0 : config.joueurs.t[0].chemin := 'voiture.png';
-						1 : config.joueurs.t[0].chemin := 'voiture2.png';
-						2 : config.joueurs.t[0].chemin := 'formule1.png';
+						1 : config.joueurs.t[0].chemin := 'voitures/rouge.png';
+						2 : config.joueurs.t[0].chemin := 'voitures/jaune.png';
+						3 : config.joueurs.t[0].chemin := 'voitures/bleu.png';
+						4 : config.joueurs.t[0].chemin := 'formule1.png';
 					end;
-					config.joueurs.t[1].chemin := 'voiture2.png';
+					config.joueurs.t[1].chemin := 'voitures/rouge.png';
 					config.joueurs.t[1].nom := pseudo2;
 					config.joueurs.t[0].nom := pseudo;
 					
@@ -1112,7 +1117,7 @@ begin
 		
 		if panel2^.enfants.t[4]^.valeur = '1' then 
 		begin
-			if (actuelSkin-1 >= 0) and (actuelSkin-1<=2) then
+			if (actuelSkin-1 >= 0) and (actuelSkin-1<=4) then
 			begin
 				actuelSkin := actuelSkin-1;
 		
@@ -1124,7 +1129,7 @@ begin
 		
 		if panel2^.enfants.t[5]^.valeur = '1' then 
 		begin
-			if (actuelSkin+1 >= 0) and (actuelSkin+1<=2) then
+			if (actuelSkin+1 >= 0) and (actuelSkin+1<=4) then
 			begin
 				actuelSkin := actuelSkin+1;
 				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin];
