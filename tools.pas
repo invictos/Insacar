@@ -10,8 +10,7 @@ function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
-procedure applyZoom(var infoPartie: T_GAMEPLAY; z: Real);
-function max(a,b: Real): Real;
+function ZoomMin(a,b: Real): Real;
 
 
 implementation
@@ -203,23 +202,18 @@ begin
 	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
 end;
 
-procedure applyZoom(var infoPartie: T_GAMEPLAY; z: Real);
+function ZoomMin(a,b: Real): Real;
 begin
-
-	infoPartie.zoom:=z;
-	//Zoom Map
-	infoPartie.map.current^ := rotozoomSurface(infoPartie.map.base, 0, z, 1);
-
-	//writeln('zoom: ',z);
-
-end;
-
-function max(a,b: Real): Real;
-begin
-	if a>b then
-		max := a
+	ZoomMin := 1;
+	if a<b then
+		ZoomMin := a
 	else
-		max := b;
+		ZoomMin := b;
+	
+	if ZoomMin > 1 then
+		ZoomMin := 1;
 		
+	if ZoomMin < 0.55 then
+		ZoomMin := 0.55;
 end;
 end.
