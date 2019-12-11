@@ -7,6 +7,8 @@ const
 	C_REFRESHRATE = 90; {FPS} // TEST COMMIT
 	C_UI_FENETRE_WIDTH = 1600;
 	C_UI_FENETRE_HEIGHT = 900;
+	C_UI_ZOOM_W = 80 ;
+	C_UI_ZOOM_H = 80 ;
 	
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.2; // kg.s^(-1)
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1;
@@ -96,15 +98,15 @@ end;
 procedure afficher_camera(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var i : Integer;
 	xm,ym,d: Integer;
-	z: Real;
+	z,w,h: Real;
 begin
 	//Map
-	xm:=Round(infoPartie.joueurs.t[0].voiture.physique^.x);
-	ym:=Round(infoPartie.joueurs.t[0].voiture.physique^.y);
+	xm:=Round(infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.x);
+	ym:=Round(infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.y);
 	if infoPartie.joueurs.taille=2 then
 	begin
-		xm:= Round(xm/2+infoPartie.joueurs.t[1].voiture.physique^.x/2);
-		ym:= Round(ym/2+infoPartie.joueurs.t[1].voiture.physique^.y/2);
+		xm:= Round(xm/2+infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.x/2);
+		ym:= Round(ym/2+infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.y/2);
 		d := Round(sqrt((infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)*(infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)+(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)*(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)));
 		writeln('d:',d);
 	end;
@@ -113,14 +115,24 @@ begin
 	fenetre.enfants.t[0]^.etat.y := -Round(ym-C_UI_FENETRE_HEIGHT/2);
 	
 
-{
+
 	if ((d > 1200)) then
 	begin
-		z := 0.5; // A FAIRE
-		fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map.base, 0, z, 1);
+		w := sqrt((infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)*(infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x));
+		h := sqrt((infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)*(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y));
+{
+		w := sqrt((infoPartie.joueurs.t[0].voiture.ui^.etat.x-infoPartie.joueurs.t[1].voiture.ui^.etat.x)*(infoPartie.joueurs.t[0].voiture.ui^.etat.x-infoPartie.joueurs.t[1].voiture.ui^.etat.x));
+		h := sqrt((infoPartie.joueurs.t[0].voiture.ui^.etat.y-infoPartie.joueurs.t[1].voiture.ui^.etat.y)*(infoPartie.joueurs.t[0].voiture.ui^.etat.y-infoPartie.joueurs.t[1].voiture.ui^.etat.y));
+		
+}
+		
+		z := max( sqrt((0.2*C_UI_FENETRE_WIDTH)/w), sqrt((0.2*C_UI_FENETRE_HEIGHT)/h));
+		writeln('ZOOM : ',z);
+		
+		applyZoom(infoPartie, z);
 		writeln(fenetre.enfants.t[0]^.surface^.w,':',fenetre.enfants.t[0]^.surface^.h);
 	end;
-}
+
 
 	
 	//Joueurs
@@ -128,8 +140,8 @@ begin
 	begin
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, infoPartie.zoom, 1);
 			
-		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x+fenetre.enfants.t[0]^.etat.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
-		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.joueurs.t[i].voiture.physique^.y+fenetre.enfants.t[0]^.etat.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);		
+		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.zoom*infoPartie.joueurs.t[i].voiture.physique^.x+fenetre.enfants.t[0]^.etat.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
+		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.zoom*infoPartie.joueurs.t[i].voiture.physique^.y+fenetre.enfants.t[0]^.etat.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);		
 {
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
@@ -176,9 +188,9 @@ begin
 		p.w := infoPartie.joueurs.t[0].voiture.surface^.w;
 		p.h := infoPartie.joueurs.t[0].voiture.surface^.h;
 		
-		writeln('HBDEBUT');
+		//writeln('HBDEBUT');
 		a := hitBox(infoPartie.map.base, p, infoPartie.joueurs.t[0].voiture.physique^.a, c, t);
-		writeln('HBFIN');
+		//writeln('HBFIN');
 		for i:=0 to a.taille-1 do
 		begin
 			writeln('P',a.data[i].n);
@@ -245,7 +257,7 @@ begin
 			if(hb.data[j].n = 2) OR (hb.data[j].n = 1) OR (hb.data[j].n = 7) AND isSameColor(hb.data[j].c,c[0]) then
 			begin
 				writeln(t,'STOP', hb.data[j].c.r);
-				//infoPartie.joueurs.t[i].voiture.physique^.dr := 0;
+				infoPartie.joueurs.t[i].voiture.physique^.dr := 0;
 			end;
 		end;
 		

@@ -11,7 +11,7 @@ function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
 procedure applyZoom(var infoPartie: T_GAMEPLAY; z: Real);
-
+function max(a,b: Real): Real;
 
 
 implementation
@@ -151,7 +151,7 @@ begin
 	ym:=p.y-Round(ca*p.h/2);
 	//writeln('HB',n,'/',xm, '//', ym);
 	c:=pixel_get(surface, xm, ym);
-	writeln('HB2/',c.r,',',c.g,',',c.b);
+	//writeln('HB2/',c.r,',',c.g,',',c.b);
 	if hitBoxInList(c, colors, t) then
 	begin
 		//writeln('g');
@@ -213,4 +213,12 @@ begin
 
 end;
 
+function max(a,b: Real): Real;
+begin
+	if a>b then
+		max := a
+	else
+		max := b;
+		
+end;
 end.
