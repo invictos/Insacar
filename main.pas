@@ -294,10 +294,34 @@ begin
 		if event_clavier[SDLK_KP3] = SDL_PRESSED then
 			infoPartie.joueurs.t[1].voiture.physique^.a := infoPartie.joueurs.t[1].voiture.physique^.a - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
 	end;
+    
+    if event_clavier[SDLK_H] = SDL_PRESSED then
+        actif:= False;
 end;
 
 procedure course_arrivee(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
+var actif : Boolean;
+    event_clavier: PUint8;
 begin
+    event_clavier := SDL_GetKeyState(NIL);
+    
+    ajouter_enfant(fenetre.enfants);
+    fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;				
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=400;
+    fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=400;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= IMG_Load('PNG/blue_panel.png');
+    
+    actif := True;
+    while actif do
+    begin
+        
+        frame_afficher(fenetre);
+        SDL_Flip(fenetre.surface);
+        if event_clavier[SDLK_K] = SDL_PRESSED then
+            actif:= False
+    end;
+    
+        
 end;
 
 procedure course_depart(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
@@ -310,7 +334,7 @@ begin
     
     //Feu
     ajouter_enfant(fenetre.enfants);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;					//96 161
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;					
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=100;
     fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=100;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface:= IMG_Load('feurouge.png');
@@ -599,9 +623,9 @@ begin
 		fond_j2^.couleur.b:=0;
 		fond_j2^.style.a :=128;
 		fond_j2^.etat.w:=170;
-		fond_j2^.etat.h:=100;
+		fond_j2^.etat.h:=200;
 		fond_j2^.etat.x:=1430;
-		fond_j2^.etat.y:=750;
+		fond_j2^.etat.y:=700;
 		fond_j2^.surface:= SDL_CreateRGBSurface(0, fond_j2^.etat.w, fond_j2^.etat.h, 32, 0,0,0,0);
 
             fond_j2^.enfants.taille :=0;
@@ -616,7 +640,7 @@ begin
 			j2_pseudo^.couleur.g :=130;
 			j2_pseudo^.couleur.b :=24;
 			j2_pseudo^.etat.x:=5;
-			j2_pseudo^.etat.y:=10;	
+			j2_pseudo^.etat.y:=5;	
 
 			//HUD Vitesse
 			ajouter_enfant(fond_j2^.enfants);
@@ -628,7 +652,55 @@ begin
 			infoPartie.joueurs.t[1].hud.vitesse^.couleur.g :=0;
 			infoPartie.joueurs.t[1].hud.vitesse^.couleur.b :=0;
 			infoPartie.joueurs.t[1].hud.vitesse^.etat.x := 5;
-			infoPartie.joueurs.t[1].hud.vitesse^.etat.y := 50;
+			infoPartie.joueurs.t[1].hud.vitesse^.etat.y := 40;
+            
+            //HUD Secteur 1
+			ajouter_enfant(fond_j2^.enfants);
+            infoPartie.joueurs.t[1].hud.secteur[0] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[0]^.typeE := texte;
+            infoPartie.joueurs.t[1].hud.secteur[0]^.valeur := 'secteur 1';
+            infoPartie.joueurs.t[1].hud.secteur[0]^.police := TTF_OpenFont('arial.ttf',25);
+            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.r :=0;
+            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.g :=0;
+            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.b :=0;
+            infoPartie.joueurs.t[1].hud.secteur[0]^.etat.x := 5;
+            infoPartie.joueurs.t[1].hud.secteur[0]^.etat.y := 70;
+            
+            //HUD Secteur 2
+			ajouter_enfant(fond_j2^.enfants);
+            infoPartie.joueurs.t[1].hud.secteur[1] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[1]^.typeE := texte;
+            infoPartie.joueurs.t[1].hud.secteur[1]^.valeur := 'secteur 2';
+            infoPartie.joueurs.t[1].hud.secteur[1]^.police := TTF_OpenFont('arial.ttf',25);
+            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.r :=0;
+            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.g :=0;
+            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.b :=0;
+            infoPartie.joueurs.t[1].hud.secteur[1]^.etat.x := 5;
+            infoPartie.joueurs.t[1].hud.secteur[1]^.etat.y := 100;
+            
+            //HUD Secteur 3
+			ajouter_enfant(fond_j2^.enfants);
+            infoPartie.joueurs.t[1].hud.secteur[2] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[2]^.typeE := texte;
+            infoPartie.joueurs.t[1].hud.secteur[2]^.valeur := 'secteur 3';
+            infoPartie.joueurs.t[1].hud.secteur[2]^.police := TTF_OpenFont('arial.ttf',25);
+            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.r :=0;
+            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.g :=0;
+            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.b :=0;
+            infoPartie.joueurs.t[1].hud.secteur[2]^.etat.x := 5;
+            infoPartie.joueurs.t[1].hud.secteur[2]^.etat.y := 130;
+            
+            //HUD Temps tour
+			ajouter_enfant(fond_j2^.enfants);
+            infoPartie.joueurs.t[1].hud.temps_tour := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.temps_tour^.typeE := texte;
+            infoPartie.joueurs.t[1].hud.temps_tour^.valeur := 'temps tour';
+            infoPartie.joueurs.t[1].hud.temps_tour^.police := TTF_OpenFont('arial.ttf',25);
+            infoPartie.joueurs.t[1].hud.temps_tour^.couleur.r :=0;
+            infoPartie.joueurs.t[1].hud.temps_tour^.couleur.g :=0;
+            infoPartie.joueurs.t[1].hud.temps_tour^.couleur.b :=0;
+            infoPartie.joueurs.t[1].hud.temps_tour^.etat.x := 5;
+            infoPartie.joueurs.t[1].hud.temps_tour^.etat.y := 160;
             
         //HUD Fond position
         ajouter_enfant(infoPartie.hud.global^.enfants);
@@ -672,11 +744,12 @@ end;
 procedure jeu_menu(fenetre: T_UI_ELEMENT);
 var event_sdl: TSDL_Event;
 	panel1, panel2, panel3, txt, champTxt, txt3, champTxt3: P_UI_ELEMENT;
-	actuelCircuit, actuelSkin1, actuelSkin2: Integer;
+	actuelMode, actuelCircuit, actuelSkin1, actuelSkin2: Integer;
 	actif: Boolean;
 	pseudo,pseudo2 : String;
 	event_clavier : PUInt8;
 	tabCircuit : array [0..2] of ansiString;
+    tabMode : array [0..1] of ansiString;
 	tabSkin, tabMiniCircuit : array [0..2] of PSDL_Surface;
 	timer: array[0..2] of LongInt;
 	config : T_CONFIG;
@@ -689,6 +762,10 @@ begin
 	actuelCircuit :=1;
 	actuelSkin1 :=1;
 	actuelSkin2 :=1;
+    actuelMode := 1;
+    
+    tabMode[0] := '1 vs 1';
+    tabMode[1] := 'Contre-la-montre';
     
 	tabSkin[0] := IMG_Load('voiture.png');
 	tabSkin[1] := IMG_Load('voiture2.png');
@@ -1216,13 +1293,31 @@ begin
 		
 		if  panel1^.enfants.t[4]^.valeur = '1' then
 		begin
-			panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := '1 vs 1';
+            if actuelMode-1<0 then
+            begin
+                actuelMode := 1;
+                panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+            end
+            else
+            begin
+                actuelMode := actuelMode-1;
+                panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+            end;
 			panel1^.enfants.t[4]^.valeur := '0';
 		end;
 
 		if  panel1^.enfants.t[5]^.valeur = '1' then
 		begin
-			panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := 'Contre-la-montre';
+			if actuelMode+1>1 then
+            begin
+                actuelMode := 0;
+                panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+            end
+            else
+            begin
+                actuelMode := actuelMode+1;
+                panel1^.enfants.t[panel1^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+            end;
 			panel1^.enfants.t[5]^.valeur := '0';
 		end;
 		
@@ -1238,22 +1333,34 @@ begin
 		
 		if  panel1^.enfants.t[6]^.valeur = '1' then
 		begin
-			if (actuelCircuit-1 >= 0) and (actuelCircuit-1<=2) then
-			begin
-				actuelCircuit := actuelCircuit-1;
+            if actuelCircuit-1 < 0 then 
+            begin
+                actuelCircuit := length(tabCircuit)-1;
+                panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
+            end
+            else
+            begin
+                actuelCircuit := actuelCircuit-1;
 				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-			end;					
+            end;
+
 			panel1^.enfants.t[6]^.valeur := '0'
 		end;
 		
 		if  panel1^.enfants.t[7]^.valeur = '1' then
 		begin
-			if (actuelCircuit+1 >= 0) and (actuelCircuit+1<=2) then
-			begin
-				actuelCircuit := actuelCircuit+1;
+            if actuelCircuit+1 >length(tabCircuit)-1 then 
+            begin
+                actuelCircuit := 0;
+                panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
+            end
+            else
+            begin
+                actuelCircuit := actuelCircuit+1;
 				panel1^.enfants.t[panel1^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-			end;
-			panel1^.enfants.t[7]^.valeur := '0'
+            end;
+
+			panel1^.enfants.t[7]^.valeur := '0';
 		end;			
 		
 		//Affichage circuit miniature en fonction du choix
@@ -1293,22 +1400,29 @@ begin
 		champTxt^.enfants.t[0]^.valeur := pseudo;
 		end;
 		
-		
 		if panel2^.enfants.t[4]^.valeur = '1' then 
 		begin
-			if (actuelSkin1-1 >= 0) and (actuelSkin1-1<=2) then
+			if actuelSkin1-1 < 0 then
 			begin
-				actuelSkin1 := actuelSkin1-1;
-		
+				actuelSkin1 := length(tabCircuit)-1;
 				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin1];
-			end;
-		panel2^.enfants.t[4]^.valeur := '0';
+			end
+            else
+            begin
+                actuelSkin1 := actuelSkin1-1;
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin1];
+            end;
+            panel2^.enfants.t[4]^.valeur := '0';
 		end;
-		
 		
 		if panel2^.enfants.t[5]^.valeur = '1' then 
 		begin
-			if (actuelSkin1+1 >= 0) and (actuelSkin1+1<=2) then
+			if actuelSkin1+1 > length(tabSkin)-1 then
+            begin
+                actuelSkin1 := 0;
+				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin1];
+            end
+            else
 			begin
 				actuelSkin1 := actuelSkin1+1;
 				panel2^.enfants.t[panel2^.enfants.taille-4]^.surface := tabSkin[actuelSkin1];
@@ -1339,10 +1453,14 @@ begin
 		
 		if panel3^.enfants.t[4]^.valeur = '1' then 
 		begin
-			if (actuelSkin2-1 >= 0) and (actuelSkin2-1<=2) then
+			if actuelSkin2-1 < 0 then
+            begin
+                actuelSkin2 := length(tabSkin)-1;
+				panel3^.enfants.t[panel3^.enfants.taille-4]^.surface := tabSkin[actuelSkin2];
+            end
+            else
 			begin
 				actuelSkin2 := actuelSkin2-1;
-		
 				panel3^.enfants.t[panel3^.enfants.taille-4]^.surface := tabSkin[actuelSkin2];
 			end;
 		panel3^.enfants.t[4]^.valeur := '0';
@@ -1351,7 +1469,12 @@ begin
 		
 		if panel3^.enfants.t[5]^.valeur = '1' then 
 		begin
-			if (actuelSkin2+1 >= 0) and (actuelSkin2+1<=2) then
+			if actuelSkin2+1 > length(tabSkin)-1 then
+            begin
+                actuelSkin2 :=0;
+                panel3^.enfants.t[panel3^.enfants.taille-4]^.surface := tabSkin[actuelSkin2];
+            end
+            else
 			begin
 				actuelSkin2 := actuelSkin2+1;
 				panel3^.enfants.t[panel3^.enfants.taille-4]^.surface := tabSkin[actuelSkin2];
