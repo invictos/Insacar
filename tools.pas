@@ -1,7 +1,7 @@
 unit tools;
 
 interface
-uses sdl, sysutils, INSACAR_TYPES;
+uses sdl, sdl_gfx, sysutils, INSACAR_TYPES;
 
 function seconde_to_temps(t: LongInt): String;
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
@@ -10,8 +10,8 @@ function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
-procedure applyZoom(infoPartie: T_GAMEPLAY; z: Real);
-
+procedure applyZoom(var infoPartie: T_GAMEPLAY; z: Real);
+function max(a,b: Real): Real;
 
 
 implementation
@@ -151,7 +151,7 @@ begin
 	ym:=p.y-Round(ca*p.h/2);
 	//writeln('HB',n,'/',xm, '//', ym);
 	c:=pixel_get(surface, xm, ym);
-	writeln('HB2/',c.r,',',c.g,',',c.b);
+	//writeln('HB2/',c.r,',',c.g,',',c.b);
 	if hitBoxInList(c, colors, t) then
 	begin
 		//writeln('g');
@@ -203,16 +203,23 @@ begin
 	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
 end;
 
-procedure applyZoom(infoPartie: T_GAMEPLAY; z: Real);
+procedure applyZoom(var infoPartie: T_GAMEPLAY; z: Real);
 begin
-{
+
 	infoPartie.zoom:=z;
-	//Zoom map
-	fenetre.enfants.t[0]^.surface := rotozoomSurface(infoPartie.map, 0, z, 1);
-	
-	//Zoom joueurs
-}
+	//Zoom Map
+	infoPartie.map.current^ := rotozoomSurface(infoPartie.map.base, 0, z, 1);
+
+	//writeln('zoom: ',z);
 
 end;
 
+function max(a,b: Real): Real;
+begin
+	if a>b then
+		max := a
+	else
+		max := b;
+		
+end;
 end.
