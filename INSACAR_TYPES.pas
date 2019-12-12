@@ -69,10 +69,8 @@ type
 		map: record
 			base : PSDL_Surface;
 			current : ^PSDL_Surface;
-			ecran: ^PSDL_Surface;
-			old: ^PSDL_Surface;
 		end;
-		zoom: Real;
+		zoom: Double;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
 			t: ^T_JOUEUR; //PARTIE

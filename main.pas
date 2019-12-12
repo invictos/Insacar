@@ -32,6 +32,7 @@ begin
 		texte:
 		begin
 			s:= element.valeur;
+			SDL_FreeSurface(element.surface);
 			element.surface := TTF_RenderText_Blended(element.police, Pchar(s), element.couleur);
 		end;
 		image:
@@ -100,14 +101,11 @@ var i : Integer;
 	xm,ym: Integer;
 	z,w,h, zw, zh: Real;
 begin
+	xm := 0;
+	ym := 0;
 	//Map
-	xm:=Round(infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.x);
-	ym:=Round(infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.y);
 	if infoPartie.joueurs.taille=2 then
 	begin
-		xm:= Round(xm/2+infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.x/2);
-		ym:= Round(ym/2+infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.y/2);
-		
 		w := sqrt((infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x)*(infoPartie.joueurs.t[0].voiture.physique^.x-infoPartie.joueurs.t[1].voiture.physique^.x));
 		h := sqrt((infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y)*(infoPartie.joueurs.t[0].voiture.physique^.y-infoPartie.joueurs.t[1].voiture.physique^.y));
 		
@@ -122,16 +120,27 @@ begin
 		z := ZoomMin(zw, zh);
 		
 		z := Round(z*5000)/5000;
-		
+		writeln('Zoom calc: ', z, 'now : ', infoPartie.zoom);
 		if z <> infoPartie.zoom then
 		begin
-			writeln('ZOOM : ',z,'//',w,'//',h,'///',zw,'/',zh);
+			writeln('ZoomData : ',z,'//',w,'//',h,'///',zw,'/',zh);
 			infoPartie.zoom:=z;
+{
 			infoPartie.map.old := infoPartie.map.ecran;
-			infoPartie.map.ecran := infoPartie.map.current;
-			infoPartie.map.current^ := rotozoomSurface(infoPartie.map.base, 0, z, 0);
+			infoPartie.map.ecran := infoPartie.map.current^;
+}
+			SDL_FreeSurface(infoPartie.map.current^);
+			infoPartie.map.current^ := zoomSurface(infoPartie.map.base, z, z, 0);
 		end;
+		writeln('Zoom out: ', z, 'now : ', infoPartie.zoom);
+		
+		xm:= Round(infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.x/2);
+		ym:= Round(infoPartie.zoom*infoPartie.joueurs.t[1].voiture.physique^.y/2);
 	end;
+		
+	xm:=Round(xm+infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.x/2);
+	ym:=Round(ym+infoPartie.zoom*infoPartie.joueurs.t[0].voiture.physique^.y/2);
+
 	
 	fenetre.enfants.t[0]^.etat.x := -Round(xm-C_UI_FENETRE_WIDTH/2);
 	fenetre.enfants.t[0]^.etat.y := -Round(ym-C_UI_FENETRE_HEIGHT/2);
@@ -141,14 +150,16 @@ begin
 	//Joueurs
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
+		SDL_freeSurface(infoPartie.joueurs.t[i].voiture.ui^.surface);
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, infoPartie.zoom, 1);
-			
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(infoPartie.zoom*infoPartie.joueurs.t[i].voiture.physique^.x+fenetre.enfants.t[0]^.etat.x-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(infoPartie.zoom*infoPartie.joueurs.t[i].voiture.physique^.y+fenetre.enfants.t[0]^.etat.y-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);		
 {
 		infoPartie.joueurs.t[i].voiture.ui^.etat.x := Round(C_UI_FENETRE_WIDTH/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.w/2);
 		infoPartie.joueurs.t[i].voiture.ui^.etat.y := Round(C_UI_FENETRE_HEIGHT/2-infoPartie.joueurs.t[i].voiture.ui^.surface^.h/2);
 }
+	writeln('JOUEUR ',i+1,':',infoPartie.joueurs.t[i].voiture.physique^.x,'/',infoPartie.joueurs.t[i].voiture.physique^.y);
+	writeln('    ',infoPartie.joueurs.t[i].voiture.ui^.etat.x,':',infoPartie.joueurs.t[i].voiture.ui^.etat.y);
 	end;
 end;
 
@@ -254,7 +265,7 @@ begin
 		p.h := infoPartie.joueurs.t[i].voiture.surface^.h-10;
 		
 		hb := hitBox(infoPartie.map.base, p, infoPartie.joueurs.t[i].voiture.physique^.a, c, t);
-		writeln('hb ',hb.taille);
+		//writeln('hb ',hb.taille);
 		for j:=0 to hb.taille-1 do
 		begin
 			if(hb.data[j].n = 2) OR (hb.data[j].n = 1) OR (hb.data[j].n = 7) AND isSameColor(hb.data[j].c,c[0]) then
@@ -358,12 +369,6 @@ begin
 		//write('6');
 		SDL_Flip(fenetre.surface);
 		//writeln('7');
-		if infoPartie.map.old <> NIL then
-		begin
-			//SDL_FreeSurface(infoPartie.map.old^);
-			//infoPartie.map.old := NIL;
-			writeln('freeSurf');
-		end;
 		
 		timer[1] := SDL_GetTicks() - timer[0];
 		timer[2] := Round(1000/C_REFRESHRATE)-timer[1];
@@ -377,16 +382,13 @@ end;
 
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
 var i: Integer;
-	s: ansiString;
-	temp : PSDL_Surface;
 begin
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
 	infoPartie.temps.last:=0;
 	infoPartie.temps.dt:=0;
-	infoPartie.zoom:=1;
-	infoPartie.map.ecran := NIL;
-	infoPartie.map.old := NIL;
+	infoPartie.zoom:=0;
+	infoPartie.map.current := NIL;
 	fenetre.enfants.taille:=0;
 	physique.taille:=0;
 
@@ -399,22 +401,12 @@ begin
 	
 	//Load Map
 	ajouter_enfant(fenetre.enfants);
+	imageLoad(infoPartie.config^.circuit.chemin, infoPartie.map.base, false);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.valeur := 'background';
-	s := infoPartie.config^.circuit.chemin;
-	temp := IMG_Load(Pchar(s));
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := SDL_DisplayFormat(temp);
-	SDL_FreeSurface(temp);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.enabled:=False; //Desactive styles ( lag )
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.w;
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface^.h;
-	
-	infoPartie.map.base := fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
 	infoPartie.map.current := @fenetre.enfants.t[fenetre.enfants.taille-1]^.surface;
-
-
+	
 	//Joueurs
-
 	infoPartie.joueurs.taille := infoPartie.config^.joueurs.taille;
 	GetMem(infoPartie.joueurs.t, infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
 	
@@ -431,10 +423,13 @@ begin
 		infoPartie.joueurs.t[i].voiture.physique^.y := 350;
 		infoPartie.joueurs.t[i].voiture.ui := fenetre.enfants.t[fenetre.enfants.taille-1];
 		infoPartie.joueurs.t[i].voiture.ui^.typeE := image;
+{
 		s:=infoPartie.joueurs.t[i].voiture.chemin;
 		temp := IMG_Load(Pchar(s));
 		infoPartie.joueurs.t[i].voiture.surface := SDL_DisplayFormatAlpha(temp);
 		SDL_FreeSurface(temp);
+}
+		imageLoad(infoPartie.joueurs.t[i].voiture.chemin, infoPartie.joueurs.t[i].voiture.surface, True);
 	end;
 	FreeMem(infoPartie.config^.joueurs.t, infoPartie.config^.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
 	infoPartie.config^.joueurs.taille:=0;

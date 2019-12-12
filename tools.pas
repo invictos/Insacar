@@ -1,7 +1,7 @@
 unit tools;
 
 interface
-uses sdl, sdl_gfx, sysutils, INSACAR_TYPES;
+uses sdl, sdl_gfx, sdl_image, sysutils, INSACAR_TYPES;
 
 function seconde_to_temps(t: LongInt): String;
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
@@ -10,7 +10,9 @@ function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
-function ZoomMin(a,b: Real): Real;
+function ZoomMin(a,b: Real): Double;
+procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
+
 
 
 implementation
@@ -202,7 +204,7 @@ begin
 	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
 end;
 
-function ZoomMin(a,b: Real): Real;
+function ZoomMin(a,b: Real): Double;
 begin
 	ZoomMin := 1;
 	if a<b then
@@ -213,7 +215,22 @@ begin
 	if ZoomMin > 1 then
 		ZoomMin := 1;
 		
-	if ZoomMin < 0.55 then
-		ZoomMin := 0.55;
+	if ZoomMin < 0.3 then
+		ZoomMin := 0.3;
+
 end;
+
+procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
+var s: ansiString;
+	temp: PSDL_Surface;
+begin
+	s := chemin; // Cast vers ansiString ( null-terminated )
+	temp := IMG_Load(Pchar(s)); //Cast vers ^char
+	if alpha then
+		surface := SDL_DisplayFormatAlpha(temp) // Duplication vers format courant
+	else
+		surface := SDL_DisplayFormat(temp);
+	SDL_FreeSurface(temp); //Libération surface chagée.
+end;
+
 end.
