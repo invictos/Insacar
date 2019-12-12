@@ -14,7 +14,6 @@ function ZoomMin(a,b: Real): Double;
 procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
 
 
-
 implementation
 
 function seconde_to_temps(t: LongInt): String;
@@ -203,6 +202,7 @@ function isSameColor(a,b: TSDL_Color): Boolean;
 begin
 	isSameColor := (a.r=b.r) AND (a.g=b.g) AND (a.b=b.b);
 end;
+
 
 function ZoomMin(a,b: Real): Double;
 begin

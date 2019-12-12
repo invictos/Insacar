@@ -57,20 +57,15 @@ type
 			last: LongInt;
 			dt: Double;
 		end;
-		hud: record
-			vitesse: P_UI_ELEMENT;
-			temps_tour: P_UI_ELEMENT;
-			secteur: array[1..3] of P_UI_ELEMENT;
-			debug: P_UI_ELEMENT;
-			debug2: P_UI_ELEMENT;
-			
-			global: P_UI_ELEMENT;
-		end;
 		map: record
 			base : PSDL_Surface;
 			current : ^PSDL_Surface;
 		end;
 		zoom: Double;
+		hud: record	
+            temps : P_UI_ELEMENT;
+            global : P_UI_ELEMENT;
+        end;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
 			t: ^T_JOUEUR; //PARTIE
@@ -86,7 +81,10 @@ type
 			physique: ^T_PHYSIQUE_ELEMENT;
 			ui: P_UI_ELEMENT;
 		end;
-		hud: record
+		hud : record 
+			vitesse : P_UI_ELEMENT;
+			secteur: array[0..3] of P_UI_ELEMENT;
+			temps_tour: P_UI_ELEMENT;
 		end;
 		temps : record
 			secteur: array[0..3] of LongInt;
