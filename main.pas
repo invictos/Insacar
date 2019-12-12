@@ -15,7 +15,8 @@ const
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 5;
 	
 	C_PHYSIQUE_VOITURE_ACCELERATION_AVANT = 5.6; // m.s^(-2)
-	C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE = 12;// m.s^(-2)
+	C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE = 3;// m.s^(-2)
+	C_PHYSIQUE_VOITURE_ACCELERATION_FREIN = 12;// m.s^(-2)
 	C_PHYSIQUE_VOITURE_ANGLE = 90; // Deg.s^(-1)
 	
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
@@ -290,14 +291,20 @@ begin
 	
 	{$IFDEF WINDOWS}
 	if event_clavier[SDLK_Q] = SDL_PRESSED then
-		infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_AVANT*25;
 	{$ENDIF}
 	{$IFDEF LINUX}
-	if event_clavier[SDLK_A] = SDL_PRESSED then
-		infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_AVANT*25;
+	if event_clavier[SDLK_A] = SDL_PRESSED then	
 	{$ENDIF}
+		if infoPartie.joueurs.t[0].voiture.physique^.dr < 0 then //Avant ou frein (si Marche arriere)
+			infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_AVANT*25
+		else
+			infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_FREIN*25;
+		
 	if event_clavier[SDLK_TAB] = SDL_PRESSED then
-		infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE*25;
+		if infoPartie.joueurs.t[0].voiture.physique^.dr < 0 then //Frein ou marche arriere.
+			infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_FREIN*25
+		else
+			infoPartie.joueurs.t[0].voiture.physique^.dr := infoPartie.joueurs.t[0].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE*25;
 		
 	if event_clavier[SDLK_R] = SDL_PRESSED then
 		infoPartie.joueurs.t[0].voiture.physique^.a := infoPartie.joueurs.t[0].voiture.physique^.a + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
@@ -308,10 +315,16 @@ begin
 	if infoPartie.joueurs.taille=2 then
 	begin
 		if event_clavier[SDLK_RCTRL] = SDL_PRESSED then
-			infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_AVANT*25;
+			if infoPartie.joueurs.t[1].voiture.physique^.dr < 0 then
+				infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_AVANT*25
+			else
+				infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_FREIN*25;
 			
 		if event_clavier[SDLK_MENU] = SDL_PRESSED then
-			infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE*25;
+			if infoPartie.joueurs.t[1].voiture.physique^.dr < 0 then 
+				infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_FREIN*25
+			else
+				infoPartie.joueurs.t[1].voiture.physique^.dr := infoPartie.joueurs.t[1].voiture.physique^.dr + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ACCELERATION_ARRIERE*25;
 			
 		if event_clavier[SDLK_KP1] = SDL_PRESSED then
 			infoPartie.joueurs.t[1].voiture.physique^.a := infoPartie.joueurs.t[1].voiture.physique^.a + infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
