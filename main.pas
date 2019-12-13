@@ -355,7 +355,11 @@ begin
 	while ((not(Eof(fic))) and (taille<33)) do 
 	begin 
 		readln(fic,recupstr[i]);
+		if (recupstr[i] = '               ') then
+			Break;
 		readln(fic,recupstr[i+1]);
+		writeln(recupstr[i]);
+		writeln(recupstr[i+1]);
 		read(fic, a);
 		read(fic, b);
 		read(fic, d);
@@ -408,14 +412,20 @@ begin
 	Writeln (fic,jour , '/', mois,'/',an);
 	Writeln(fic,infoPartie.hud.temps^.valeur);
 	
-	For k:=pos to taille do 
-	begin 
-		Writeln(fic, recupstr[i]);
-		Writeln(fic, recupstr[i+1]);
-		Writeln(fic, seconde_to_temps(recuptps[k]));
-		i:=i+2
+	if taille>pos then 
+	begin	
+		For k:=pos to taille-1 do 
+		begin 
+			Writeln(fic, recupstr[i]);
+			Writeln(fic, recupstr[i+1]);
+			Writeln(fic, seconde_to_temps(recuptps[k]));
+			i:=i+2
+		end;
 	end;
-
+	Writeln(fic,'               ');
+	
+	
+	
 	close(fic);
 
 
@@ -1780,6 +1790,8 @@ begin
 			for i:=0 to 2 do
 			begin
 				readln(fichier,recup[i,max]);
+				if recup[i,max] = '               ' then
+				 break ; 
 			end;
 			max:= max+1;
                 end;
