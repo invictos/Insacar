@@ -12,6 +12,7 @@ function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
 function ZoomMin(a,b: Real): Double;
 procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
+procedure updatePseudo(k : TSDLKey; var pseudo: String);
 
 
 implementation
@@ -233,4 +234,42 @@ begin
 	SDL_FreeSurface(temp); //Libération surface chagée.
 end;
 
+procedure updatePseudo(k : TSDLKey; var pseudo: String);
+var keys : PUint8;
+begin
+	keys := SDL_GetKeyState(NIL);
+	case k of
+		SDLK_LSHIFT : ;
+										
+		SDLK_BACKSPACE : Delete(pseudo,Length(pseudo),1);
+		{$IFDEF WINDOWS}
+		SDLK_q : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
+				 else pseudo := pseudo + 'a';
+										
+		SDLK_a : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Q'			
+				 else pseudo := pseudo + 'q';
+				
+		SDLK_w : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Z'
+				 else pseudo := pseudo + 'z';
+				 
+		SDLK_z : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'W'
+				 else pseudo := pseudo + 'w';
+				
+		SDLK_SEMICOLON : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'M'	
+						 else pseudo := pseudo + 'm';
+		{$ENDIF}
+		else
+		begin
+			writeln('k:', k);
+			writeln('chr:',chr(k));
+			if k in [97..122] then
+				if keys[SDLK_LSHIFT] = SDL_PRESSED then
+					pseudo := concat(pseudo, chr(k-32)) // MAJ
+				else
+					pseudo := concat(pseudo, chr(k)) //MIN
+			else if (k>254) AND (k<266) then
+				pseudo := concat(pseudo, chr(k-208));
+		end;
+	end;
+end;
 end.
