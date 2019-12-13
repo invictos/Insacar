@@ -71,6 +71,7 @@ type
 			t: ^T_JOUEUR; //PARTIE
 			taille: Integer;
 		end;
+        actuelTour : Integer;
 	end;
 	
 	T_JOUEUR = record

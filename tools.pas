@@ -243,19 +243,19 @@ begin
 										
 		SDLK_BACKSPACE : Delete(pseudo,Length(pseudo),1);
 		{$IFDEF WINDOWS}
-		SDLK_q : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
+		SDLK_q : if keys[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'A'
 				 else pseudo := pseudo + 'a';
 										
-		SDLK_a : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Q'			
+		SDLK_a : if keys[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Q'			
 				 else pseudo := pseudo + 'q';
 				
-		SDLK_w : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Z'
+		SDLK_w : if keys[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'Z'
 				 else pseudo := pseudo + 'z';
 				 
-		SDLK_z : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'W'
+		SDLK_z : if keys[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'W'
 				 else pseudo := pseudo + 'w';
 				
-		SDLK_SEMICOLON : if event_clavier[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'M'	
+		SDLK_SEMICOLON : if keys[SDLK_LSHIFT] = SDL_PRESSED then pseudo := pseudo +'M'	
 						 else pseudo := pseudo + 'm';
 		{$ENDIF}
 		else
