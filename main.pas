@@ -352,7 +352,6 @@ begin
 	i:=0 ;
 	taille := 0;
 	GetDate(an,mois,jour,joursem);
-	Writeln('temps : ', infoPartie.temps.last-infoPartie.temps.debut);
 	while ((not(Eof(fic))) and (taille<33)) do 
 	begin 
 		readln(fic,recupstr[i]);
@@ -366,12 +365,9 @@ begin
 		read(fic, f);
 		read(fic, g);
 		read(fic, h);
-		writeln(a,b,d,c,e,d,f,g,h);
 		recuptps[taille] := (StrtoInt(a)*10+StrtoInt(b))*60000 + (StrtoInt(c)*10 + StrtoInt(e))*1000 +StrtoInt(f)*100+StrtoInt(g)*10+StrtoInt(h);
 		readln(fic);
 		
-		writeln(recupstr[i], '      ' ,recupstr[i+1]);
-		writeln(recuptps[taille]);
 		taille := taille +1 ;
 		i:=i+2;
 	end;
@@ -394,11 +390,9 @@ begin
 			fin:=True;
 			
 		i:=i+1;
-		writeln ('pos:',pos);
 	end;
 	if i>taille then 
 	pos := taille ; 
-	writeln('pos :',pos);
 
 	Rewrite(fic);
 	i:=0;
@@ -423,7 +417,6 @@ begin
 	end;
 
 	close(fic);
-	writeln('fini!!!!');
 
 
 
