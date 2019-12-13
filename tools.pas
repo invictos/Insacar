@@ -22,7 +22,18 @@ begin
 	m:= t DIV 60000;
 	s:= (t MOD 60000) DIV 1000;
 	ms:= t MOD 1000;
-	seconde_to_temps := concat(intToStr(m), '.', intToStr(s), '.', intToStr(ms));
+	if m<9 then 
+	begin 
+		If s >9 then 
+		seconde_to_temps := concat ('0'+ intToStr(m), '.', intToStr(s), '.', intToStr(ms))
+		else
+		seconde_to_temps := concat ('0'+ intToStr(m)+ '.0'+ intToStr(s)+ '.'+ intToStr(ms))
+	end
+	else 
+		If s >9 then 
+		seconde_to_temps := concat (intToStr(m), '.', intToStr(s), '.', intToStr(ms))
+		else
+		seconde_to_temps := concat (intToStr(m)+ '.0'+ intToStr(s)+ '.'+ intToStr(ms))
 end;
 
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);

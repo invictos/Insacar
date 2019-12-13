@@ -340,62 +340,53 @@ end;
 
 procedure scorereg ( infopartie : T_GAMEPLAY; fenetre : T_UI_ELEMENT);
 var fic : Text ;
-recup: array [1..34] of Longint;
-i,taille,pos : integer ;
+recuptps: array [0..33] of Longint;
+recupstr: array [0..67] of String;
+i,taille,pos,k : integer ;
 a,b,c,d,e,f,g,h : char ;
-dechet : string;
 an,mois,jour,joursem : Word;
 fin: boolean; 
 begin 
 	assign(fic , 'score/scorereg.txt');
 	reset (fic);
-	i:=1 ;
+	i:=0 ;
 	taille := 0;
 	GetDate(an,mois,jour,joursem);
 	Writeln('temps : ', infoPartie.temps.last-infoPartie.temps.debut);
-	while (not(Eof(fic))) do 
+	while ((not(Eof(fic))) and (taille<33)) do 
 	begin 
-
-		if(i mod 3 = 0) then 
-		begin
-			read(fic, a);
-			read(fic, b);
-			read(fic, d);
-			read(fic, c);
-			read(fic, e);
-			read(fic, d);
-			read(fic, f);
-			read(fic, g);
-			read(fic, h);
-
-			writeln(a,b,d,c,e,d,f,g,h);
-			recup[(i div 3)] := (StrtoInt(a)*10+StrtoInt(b))*60000 + (StrtoInt(c)*10 + StrtoInt(e))*1000 +StrtoInt(f)*100+StrtoInt(g)*10+StrtoInt(h);
-			taille := taille +1 ; 
-		end
-		else 
-		begin
-			readln(fic,dechet);
+		readln(fic,recupstr[i]);
+		readln(fic,recupstr[i+1]);
+		read(fic, a);
+		read(fic, b);
+		read(fic, d);
+		read(fic, c);
+		read(fic, e);
+		read(fic, d);
+		read(fic, f);
+		read(fic, g);
+		read(fic, h);
+		writeln(a,b,d,c,e,d,f,g,h);
+		recuptps[taille] := (StrtoInt(a)*10+StrtoInt(b))*60000 + (StrtoInt(c)*10 + StrtoInt(e))*1000 +StrtoInt(f)*100+StrtoInt(g)*10+StrtoInt(h);
+		readln(fic);
 		
-			if ((i mod 3=1) and (i<>1)) then
-			begin
-			readln(fic,dechet);// j'ai aucune idéé de pourquoi ce bug 
-			end;
-		end;
-		i:=i+1;
+		writeln(recupstr[i], '      ' ,recupstr[i+1]);
+		writeln(recuptps[taille]);
+		taille := taille +1 ;
+		i:=i+2;
 	end;
-	
+		
 	close(fic);
-	
-	
+
 	
 	pos:=0;
-	i:=0;
+	i:=1;
 	fin :=false;
 	while not(fin) do 
 	begin
-		if recup[i]>( infoPartie.temps.last-infoPartie.temps.debut) then 
+		if recuptps[i]>( infoPartie.temps.last-infoPartie.temps.debut) then 
 		begin	
-			pos:=i-2;
+			pos:=i;
 			fin := True;
 		
 		end;
@@ -403,59 +394,45 @@ begin
 			fin:=True;
 			
 		i:=i+1;
+		writeln ('pos:',pos);
 	end;
-	
-	
-	
-	
-	if i=taille then //si dernier score 
-	begin 
-		if taille <34 then
-		begin 
-		Append(fic);
-		Writeln(fic, infoPartie.joueurs.t[0].nom);
-		Writeln (fic, jour , '/', mois,'/',an);
-		Writeln(fic, '0',infoPartie.hud.temps^.valeur);
-		close(fic);
-		end;
-		
-	end
-	
-	
-	else 
+	if i>taille then 
+	pos := taille ; 
+	writeln('pos :',pos);
+
+	Rewrite(fic);
+	i:=0;
+	For k:=0 to pos-1 do 
 	begin
-	
-		
-		
-		if pos=0 then //si fisrt
-		begin
-			Append(fic);
-			Writeln(fic,infoPartie.joueurs.t[0].nom);
-			Writeln (fic,jour , '/', mois,'/',an);
-			Writeln(fic,'0',infoPartie.hud.temps^.valeur);
-		end
-		else
-		begin
-			reset(fic);
-			For i := 0 to pos *3 do
-			begin 
-			
-			Readln(fic,dechet);
-			
-			end;
-			close(fic);
-			Append(fic);
-			writeln('ok');
-			Writeln(fic,infoPartie.joueurs.t[0].nom);
-			Writeln (fic,jour , '/', mois,'/',an);
-			Writeln(fic,'0',infoPartie.hud.temps^.valeur);
-		end;	
-		close(fic);
+		Writeln(fic, recupstr[i]);
+		Writeln(fic, recupstr[i+1]);
+		Writeln(fic, seconde_to_temps(recuptps[k]));
+		i:=i+2
 	end;
 	
+	Writeln(fic,infoPartie.joueurs.t[0].nom);
+	Writeln (fic,jour , '/', mois,'/',an);
+	Writeln(fic,infoPartie.hud.temps^.valeur);
+	
+	For k:=pos to taille do 
+	begin 
+		Writeln(fic, recupstr[i]);
+		Writeln(fic, recupstr[i+1]);
+		Writeln(fic, seconde_to_temps(recuptps[k]));
+		i:=i+2
+	end;
+
+	close(fic);
+	writeln('fini!!!!');
+
+
+
 
 
 end;
+
+
+
 
 
 
