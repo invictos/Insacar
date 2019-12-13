@@ -11,6 +11,7 @@ type
 	T_RENDER_STYLE = record
 		enabled, display: Boolean;
 		a : Byte;
+		zoom: Real;
 	end;
 	
 	T_HITBOX_COLOR = record
@@ -47,6 +48,7 @@ type
 		police: PTTF_Font;
 		enfants: T_UI_TABLEAU;
 	end;
+	
 	P_UI_ELEMENT = ^T_UI_ELEMENT;
 	
 	T_GAMEPLAY = record
@@ -56,13 +58,15 @@ type
 			last: LongInt;
 			dt: Double;
 		end;
-		hud: record
-			vitesse: ^T_UI_ELEMENT;
-			temps_tour: ^T_UI_ELEMENT;
-			debug: ^T_UI_ELEMENT;
-			debug2: ^T_UI_ELEMENT;
+		map: record
+			base : PSDL_Surface;
+			current : ^PSDL_Surface;
 		end;
-		map: PSDL_SURFACE;
+		zoom: Double;
+		hud: record	
+            temps : P_UI_ELEMENT;
+            global : P_UI_ELEMENT;
+        end;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record
 			t: ^T_JOUEUR; //PARTIE
@@ -74,12 +78,18 @@ type
 		voiture: record
 			chemin: String;
 			surface: PSDL_SURFACE;
+			current: ^PSDL_Surface;
 			physique: ^T_PHYSIQUE_ELEMENT;
-			ui: ^T_UI_ELEMENT;
+			ui: P_UI_ELEMENT;
+		end;
+		hud : record 
+			vitesse : P_UI_ELEMENT;
+			secteur: array[0..3] of P_UI_ELEMENT;
+			temps_tour: P_UI_ELEMENT;
 		end;
 		temps : record
-			debut: Integer;
-			secteur: array[1..3] of Integer;
+			secteur: array[0..3] of LongInt;
+			actuel: ShortInt;
 		end;
 		nbTour: Integer;
 		nom: String;
