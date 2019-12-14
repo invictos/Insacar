@@ -1,3 +1,8 @@
+{*---------------------------------------------------------------------------------------------
+ *  Copyright (c) InsaCar. <antoine.camusat@insa-rouen.fr> <anas.katim@insa-rouen.fr> <aleksi.mouvier@insa-rouen.fr>
+ *  Licensed under GNU General Public License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*}
+
 unit INSACAR_TYPES;
 
 interface
@@ -47,6 +52,7 @@ type
 		style: T_RENDER_STYLE;
 		police: PTTF_Font;
 		enfants: T_UI_TABLEAU;
+		parent: ^T_UI_ELEMENT;
 	end;
 	P_UI_ELEMENT = ^T_UI_ELEMENT;
 	
