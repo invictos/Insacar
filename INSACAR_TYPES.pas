@@ -11,7 +11,7 @@ uses sdl, sdl_ttf;
 type
 	T_RENDER_ETAT = record
 		rect: TSDL_Rect;
-		a,o : Byte;
+		a: Byte;
 	end;
 	T_RENDER_STYLE = record
 		enabled, display: Boolean;

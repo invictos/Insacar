@@ -13,7 +13,7 @@ procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
 procedure ajouter_enfant(var element: T_UI_ELEMENT);
 function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: array of TSDL_Color): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
 function ZoomMin(a,b: Real): Double;
 procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
@@ -150,7 +150,7 @@ begin
 		SDL_UnLockSurface(surface);
 end;
 
-function hitBoxInList(c: TSDL_Color; colors: PSDL_Color; t: ShortInt): Boolean;
+function hitBoxInList(c: TSDL_Color; colors: array of TSDL_Color): Boolean;
 var i: ShortInt;
 begin
 	//Initialisation
@@ -160,7 +160,7 @@ begin
 	repeat
 		hitBoxInList := (colors[i].r=c.r) AND (colors[i].g=c.g) AND (colors[i].b=c.b);
 		i:=i+1;
-	until (i=t) OR (hitBoxInList=True);
+	until (i=Length(colors)) OR (hitBoxInList=True);
 end;
 
 procedure hitBoxAddList(var l: T_HITBOX_COLOR; n: ShortInt; c: TSDL_COLOR);
@@ -172,7 +172,7 @@ begin
 	l.taille:=l.taille+1;
 end;
 
-function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: PSDL_Color; t: ShortInt): T_HITBOX_COLOR;
+function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: array of TSDL_Color): T_HITBOX_COLOR;
 var xm, ym, xt, yt: Integer;
 	sa,ca: Real;
 	i,j,n: ShortInt;
@@ -192,7 +192,7 @@ begin
 	
 	//Test point
 	c:=pixel_get(surface, xm, ym);
-	if hitBoxInList(c, colors, t) then
+	if hitBoxInList(c, colors) then
 		hitBoxAddList(hitBox, n, c);
 	
 	//Incrémentation point test
@@ -206,7 +206,7 @@ begin
 		
 		//Test point
 		c:=pixel_get(surface, xt, yt);
-		if hitBoxInList(c, colors, t) then
+		if hitBoxInList(c, colors) then
 			hitBoxAddList(hitBox, n, c);
 		
 		//Incrémentation point
@@ -220,7 +220,7 @@ begin
 			
 			//Test point
 			c:=pixel_get(surface, xt, yt);
-			if hitBoxInList(c, colors, t) then
+			if hitBoxInList(c, colors) then
 				hitBoxAddList(hitBox, n, c);
 			
 			//Incrémentation point
@@ -237,7 +237,7 @@ begin
 	
 	//Test point
 	c:=pixel_get(surface, xm, ym);
-	if hitBoxInList(c, colors, t) then
+	if hitBoxInList(c, colors) then
 		hitBoxAddList(hitBox, n, c);
 end;
 
