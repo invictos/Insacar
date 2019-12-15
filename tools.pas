@@ -231,7 +231,7 @@ begin
 		surface := SDL_DisplayFormatAlpha(temp) // Duplication vers format courant
 	else
 		surface := SDL_DisplayFormat(temp);
-	SDL_FreeSurface(temp); //Libération surface chagée.
+	SDL_FreeSurface(temp); //Libération surface chargée.
 end;
 
 procedure updatePseudo(k : TSDLKey; var pseudo: String);
