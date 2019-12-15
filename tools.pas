@@ -18,7 +18,7 @@ function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
 function ZoomMin(a,b: Real): Double;
 procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
 procedure updatePseudo(k : TSDLKey; var pseudo: String);
-
+procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
 
 implementation
 
@@ -357,4 +357,86 @@ begin
 		end;
 	end;
 end;
+
+procedure scoreLire(nomFichier: String; var scores: T_SCORES);
+var fichier: file of T_SCORE;
+	i: ShortInt;
+begin
+	//On assigne le fichier
+	assign(fichier, nomFichier);
+	reset(fichier);
+
+	//Initialisation scores
+	setLength(scores, fileSize(fichier));
+	
+	//Boucle dans chaque lignes
+	for i:=0 to fileSize(fichier)-1 do
+		read(fichier, scores[i]);
+
+	//Fermeture fichier
+	close(fichier);
+end;
+
+procedure scoreEcrire(nomFichier: String; scores: T_SCORES);
+var fichier: file of T_SCORE;
+	i: ShortInt;
+begin
+	//Assigner le fichier
+	assign(fichier, nomFichier);
+	
+	//Curseur au début
+	rewrite(fichier);
+	
+	//Ecriture
+	for i:=0 to length(scores)-1 do
+		write(fichier, scores[i]);
+	
+	//Fermeture
+	close(fichier);
+end;
+
+procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
+var scores: T_SCORES;
+	i,j, nbDone:shortInt;
+	done: array of boolean;
+begin
+	scoreLire('scores.dat', scores);
+
+	setLength(done, length(miseAJour));
+	for i:=0 to length(done)-1 do
+		done[i] := False;
+
+	nbDone := 0;
+	i:=0;
+	repeat
+		j:=0;
+		repeat
+			if scores[i].nom = miseAJour[j].nom then
+			begin
+				done[j] := True;
+				nbDone := nbDone+1;
+				if scores[i].temps < miseAJour[j].temps then
+					scores[i].temps := miseAJour[j].temps;
+			end;
+			j := j+1;
+		until (scores[i].nom = miseAJour[j-1].nom) OR (j = length(miseAJour));
+		i := i+1;
+	until (nbDone = length(miseAJour)) OR (i = length(scores)-1);
+
+	if nbDone <> length(miseAJour) then
+	begin
+		for i:=0 to length(done)-1 do
+			if not done[i] then
+			begin
+				setLength(scores, length(scores)+1);
+				scores[length(scores)-1].nom := miseAJour[i].nom;
+				scores[length(scores)-1].temps := miseAJour[i].temps;
+			end;
+	end;
+
+	scoreEcrire('scores.dat', scores);
+end;
+
+
+begin
 end.

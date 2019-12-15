@@ -117,6 +117,12 @@ type
 		end;
 		nbTour: Integer;
 	end;
+	T_SCORE = record
+		nom: String;
+		temps: LongInt;
+	end;
+	T_SCORES = array of T_SCORE;
+	
 implementation
 begin
 end.
