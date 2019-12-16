@@ -25,6 +25,7 @@ implementation
 
 function seconde_to_temps(t: LongInt): String;
 var m,s,ms: Integer;
+	tm, ts: String;
 begin
 	//Minutes
 	m:= t DIV 60000;
@@ -35,8 +36,18 @@ begin
 	//Millisecondes
 	ms:= t MOD 1000;
 	
+	if m < 9 then
+		tm := concat('0', intToStr(m))
+	else
+		tm := intToStr(m);
+		
+	if s < 9 then
+		ts := concat('0', intToStr(s))
+	else
+		ts := intToStr(s);
+		
 	//Texte
-	seconde_to_temps := concat(intToStr(m), '.', intToStr(s), '.', intToStr(ms));
+	seconde_to_temps := concat(tm, '.', ts, '.', intToStr(ms));
 end;
 
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);

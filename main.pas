@@ -363,9 +363,18 @@ var actif : Boolean;
 	scores : T_SCORES;
 	i: ShortInt;
 begin
-	
+	//Cacher le HUD
 	infoPartie.hud.global^.style.display := False;
 	
+	//Calcul meilleur tour
+	setLength(scores, infoPartie.joueurs.taille);
+	for i:=0 to length(scores)-1 do
+	begin
+			scores[i].nom := infoPartie.joueurs.t[i].nom;
+			scores[i].temps := min(infoPartie.joueurs.t[i].temps.tours);
+	end;
+	
+	//Panneau fin
 	ajouter_enfant(fenetre);
 	panel := fenetre.enfants.t[fenetre.enfants.taille-1];
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;				
@@ -373,13 +382,15 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=150;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('grey_panel.png');
 		
+		//Texte 'fin de course'
 		ajouter_enfant(panel^);
 		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'FIN DE LA COURSE';
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 190;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 20;	
+		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 35;
 		
+		//Texte nom circuit
 		ajouter_enfant(panel^);
 		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Circuit : ',infoPartie.config^.circuit.nom);
@@ -387,13 +398,15 @@ begin
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 100;
 		
+		//Record circuit
 		ajouter_enfant(panel^);
 		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record circuit : ');
+		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record circuit : ');//////////////////////////////////////////////////////////////////////////////
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 150;	
 		
+		//Texte 'resume course'
 		ajouter_enfant(panel^);
 		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'RESUME DE LA COURSE';
@@ -401,42 +414,45 @@ begin
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 150;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 250;	
 		
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := infoPartie.joueurs.t[0].nom;
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 170;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
 		
-
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T1 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[1]));
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 360;
-		
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T2 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[2]));
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 410;
-		
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T3 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[3]));
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 460;		
-		
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'Final : ';
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 520;
-		
+		//Nom J1
+		for i:=0 to infoPartie.joueurs.taille-1 do
+		begin
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := infoPartie.joueurs.t[i].nom;
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 170+230*i;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
+			
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T1 : ', seconde_to_temps(infoPartie.joueurs.t[i].temps.tours[1]));
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50+300*i;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 360;
+			
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T2 : ', seconde_to_temps(infoPartie.joueurs.t[i].temps.tours[2]));
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50+300*i;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 410;
+			
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T3 : ', seconde_to_temps(infoPartie.joueurs.t[i].temps.tours[3]));
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50+300*i;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 460;		
+			
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'Final : ';
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40+300*i;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 520;
+		end;
 				  
 		if infoPartie.joueurs.taille = 1 then
 		begin
@@ -446,16 +462,6 @@ begin
 			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 200;	
-		end;
-				
-		if infoPartie.joueurs.taille = 2 then
-		begin
-			ajouter_enfant(panel^);
-			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-			panel^.enfants.t[panel^.enfants.taille-1]^.valeur :=infoPartie.joueurs.t[1].nom;
-			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 400;
-			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
 		end;
 		
 		ajouter_enfant(panel^);
@@ -471,29 +477,24 @@ begin
 		while SDL_PollEvent(@event_sdl) = 1 do
 			if (event_sdl.type_ = SDL_QUITEV)
 				OR (event_sdl.key.keysym.sym = 13)
-				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)
-				AND isInElement(panel^.enfants.t[panel^.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)) then
+				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(panel^.enfants.t[panel^.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)) then
 				actif := False;
 		
 		frame_afficher(fenetre);
 		SDL_Flip(fenetre.surface);
 	end;
 
-	setLength(scores, infoPartie.joueurs.taille);
-	for i:=0 to length(scores)-1 do
-	begin
-			scores[i].nom := infoPartie.joueurs.t[i].nom;
-			scores[i].temps := min(infoPartie.joueurs.t[i].temps.tours);;
-	end;
-	scoreMaj(concat('circuits/',infoPartie.config^.circuit.nom, '.dat'), scores);
-	
 
+	scoreMaj(concat('circuits/',infoPartie.config^.circuit.nom, '.dat'), scores);
 end;
 
 procedure course_depart(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
+var i: ShortInt;
 begin
-
+	//Affichage circuit
 	afficher_camera(infoPartie, fenetre);
+	
+	//Masquer HUD
 	infoPartie.hud.global^.style.display := False;
 	
 	//Feu
@@ -502,28 +503,28 @@ begin
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=100;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=100;
 	
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feurouge.png');
+	//Décompte
+	for i:=0 to 2 do
+	begin
+		//Affichage feu
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load(Pchar(concat('feu/feu', intToStr(i), '.png')));
+		
+		//Rendu
+		frame_afficher(fenetre);
+		SDL_Flip(fenetre.surface);
+		
+		//Délai
+		Sleep(1000);
+		SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
+	end;
 	
-	frame_afficher(fenetre);
-	SDL_Flip(fenetre.surface);
-	Sleep(1000);
-	SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
-	
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuorange.png');
-	frame_afficher(fenetre);
-	SDL_Flip(fenetre.surface);
-	Sleep(1000);
-	
-	SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuvert.png');
-	frame_afficher(fenetre);
-	SDL_Flip(fenetre.surface);
-	Sleep(1000);
-	
+	//Cacher feu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.display := False;
 	
+	//Afficher HUD
 	infoPartie.hud.global^.style.display := True;
    
+	//Démarage temps
 	infoPartie.temps.debut := SDL_GetTicks();
 	infoPartie.temps.last := infoPartie.temps.debut;
 end;
@@ -593,13 +594,13 @@ var i,j: Integer;
 	fond_hd, fond_hg, fond_j1, fond_j2, circuit_nom, temps_texte, j1_pseudo, j2_pseudo,tour_texte1,tour_texte2: P_UI_ELEMENT;
 	
 begin
-	
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
 	infoPartie.temps.last:=0;
 	infoPartie.temps.dt:=0;
 	infoPartie.zoom:=1.000001;
 	infoPartie.map.current := NIL;
+	infoPartie.premier := 0;
 	fenetre.enfants.taille:=0;
 	physique.taille:=0;
 	
