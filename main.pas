@@ -470,18 +470,22 @@ begin
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 600;
 		panel^.enfants.t[panel^.enfants.taille-1]^.surface := IMG_Load('jeu_menu/back-button.png');
 		
-	actif := True;
+	//Rendu et affichage (fixe)
+	frame_afficher(fenetre);
+	SDL_Flip(fenetre.surface);
 	
+	//Boucle évenement (affichage fixe)
+	actif := True;
 	while actif do
 	begin
 		while SDL_PollEvent(@event_sdl) = 1 do
 			if (event_sdl.type_ = SDL_QUITEV)
 				OR (event_sdl.key.keysym.sym = 13)
-				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(panel^.enfants.t[panel^.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)) then
-				actif := False;
+				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)) then
+				actif := False; //Quitter
 		
-		frame_afficher(fenetre);
-		SDL_Flip(fenetre.surface);
+		//Délai
+		SDL_Delay(50);
 	end;
 
 
@@ -1406,6 +1410,120 @@ begin
 	
 end;
 
+procedure tutoriel(fenetre: T_UI_ELEMENT);
+var event_sdl : TSDL_Event;
+	texteTutoriel: array [0..1] of array of String;
+	panneau: P_UI_ELEMENT;
+	texteElement: P_UI_ELEMENT;
+	arial : PTTF_Font;	
+	fichier : Text ;
+	actif : Boolean;
+	ligne: String;
+	i,j: Integer;
+begin
+	//Police
+	arial := TTF_Openfont('arial.ttf',20);
+	
+	//Couleur fond
+	fenetre.couleur.r:=243;
+	fenetre.couleur.g:=243;
+	fenetre.couleur.b:=215;
+
+	//Vider affichage
+	fenetre.enfants.taille:=0;
+
+	//Bouton retour
+	ajouter_enfant(fenetre);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image ;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface   := IMG_Load('jeu_menu/back-button.png');
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 45;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 800;
+	
+	//Initialisation
+	for i:=0 to 1 do
+		setLength(texteTutoriel[i], 0);
+		
+	//Texte tutoriel
+	assign(fichier , 'tuto/tutoriel.txt') ;
+	
+	//Curseur au début
+	reset(fichier);
+	
+	//Lecture fichier
+	i:=0;
+	while not EOF(fichier) do
+	begin
+		//Lecture ligne
+		readln(fichier, ligne);
+		//Basculement second panneau
+		if ligne = '' then
+			i := 1
+		else
+		begin
+			//Nouvelle ligne 1er panneau
+			setLength(texteTutoriel[i], length(texteTutoriel[i])+1);
+			texteTutoriel[i][length(texteTutoriel[i])-1] := ligne;
+		end;
+	end;
+	
+	//Fermeture fichier
+	close(fichier);
+
+	//Affichage panneau
+	for i:=0 to 1 do 
+	begin
+		//Ajouter panneau
+		ajouter_enfant(fenetre);
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE:= image;
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('jeu_menu/grey_panel.png');
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x := 150+650*i;
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y := 75;
+		panneau := fenetre.enfants.t[fenetre.enfants.taille-1];
+		
+		//Boucle texte panneau
+		for j:=0 to length(texteTutoriel[i])-1 do
+		begin
+			//Affichage texte
+			ajouter_enfant(panneau^);
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := arial;
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := texteTutoriel[i][j];
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x := 50;
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 50+50*j;
+			
+			//Affichage icône
+			if FileExists(concat('tuto/image', intToStr(i+1),'_', intToStr(j+1),'.png')) then
+			begin
+				texteElement := panneau^.enfants.t[panneau^.enfants.taille-1];
+				ajouter_enfant(texteElement^);
+				texteElement^.enfants.t[texteElement^.enfants.taille-1]^.typeE := image;
+				texteElement^.enfants.t[texteElement^.enfants.taille-1]^.surface := IMG_Load(Pchar(concat('tuto/image', intToStr(i+1),'_', intToStr(j+1),'.png')));
+				texteElement^.enfants.t[texteElement^.enfants.taille-1]^.etat.x := 25;
+				texteElement^.enfants.t[texteElement^.enfants.taille-1]^.etat.y := -3;
+			end;
+		end;
+	end;
+
+
+	//Rendu
+	frame_afficher(fenetre);
+	SDL_Flip(fenetre.surface);
+	
+	//Boucle évenement (affichage fixe)
+	actif := True;
+	while actif do
+	begin
+		while SDL_PollEvent(@event_sdl) = 1 do
+			if (event_sdl.type_ = SDL_QUITEV)
+				OR (event_sdl.key.keysym.sym = 13)
+				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)) then
+				actif := False; //Quitter
+		
+		//Délai
+		SDL_Delay(50);
+	end;
+end;
+
 procedure menu(var fenetre: T_UI_ELEMENT);
 var	event_sdl : TSDL_Event;
 	actif : Boolean;
@@ -1528,13 +1646,7 @@ begin
 						
 						//Délai puis tutoriel
 						Sleep(300);
-						/////////////////////////////////////
-						/////////////////////////////////////
-						/////////////////////////////////////
-						//tutoriel(fenetre);
-						/////////////////////////////////////
-						/////////////////////////////////////
-						/////////////////////////////////////
+						tutoriel(fenetre);
 					end;
 					
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y) and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
