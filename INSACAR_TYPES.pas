@@ -1,3 +1,8 @@
+{*---------------------------------------------------------------------------------------------
+ *  Copyright (c) InsaCar. <antoine.camusat@insa-rouen.fr> <anas.katim@insa-rouen.fr> <aleksi.mouvier@insa-rouen.fr>
+ *  Licensed under GNU General Public License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*}
+
 unit INSACAR_TYPES;
 
 interface
@@ -6,7 +11,7 @@ uses sdl, sdl_ttf;
 type
 	T_RENDER_ETAT = record
 		rect: TSDL_Rect;
-		a,o : Byte;
+		a: Byte;
 	end;
 	T_RENDER_STYLE = record
 		enabled, display: Boolean;
@@ -47,6 +52,7 @@ type
 		style: T_RENDER_STYLE;
 		police: PTTF_Font;
 		enfants: T_UI_TABLEAU;
+		parent: ^T_UI_ELEMENT;
 	end;
 	P_UI_ELEMENT = ^T_UI_ELEMENT;
 	
@@ -113,6 +119,12 @@ type
 		end;
 		nbTour: Integer;
 	end;
+	T_SCORE = record
+		nom: String;
+		temps: LongInt;
+	end;
+	T_SCORES = array of T_SCORE;
+	
 implementation
 begin
 end.
