@@ -1,5 +1,10 @@
 Bonjour,
-Les controles de ce jeu sont assez simples a comprendre 
-Pour accelerer appuyez sur espace :
-Pour ralentir/recculer appuyez sur controle :
-pour tourner servez vous des fleches directionnelles :  
+Les controles de ce jeu sont assez simples 
+Pour accelerer appuyez sur a :
+Pour ralentir/reculer appuyez sur tab :
+pour tourner appuez sur R et Y :  
+Si il y a un deuxieme joueur,
+Ses controles sont les suivants :
+Pour accelerer appuyez sur ctrl (droite) :
+Pour ralentir/reculer appuyez sur menu  :
+pour tourner appuez sur 1 et 3 (pad) :  
