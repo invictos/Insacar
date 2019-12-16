@@ -92,8 +92,19 @@ begin
 	//Temps géneral
 	infoPartie.hud.temps^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
 	
+	//Premier
+	if infoPartie.joueurs.taille = 2 then
+	begin
+		if (infoPartie.joueurs.t[infoPartie.premier].nbTour < infoPartie.joueurs.t[(infoPartie.premier+1) MOD 2].nbTour)
+		OR ((infoPartie.joueurs.t[infoPartie.premier].nbTour = infoPartie.joueurs.t[(infoPartie.premier+1) MOD 2].nbTour) AND (infoPartie.joueurs.t[infoPartie.premier].temps.actuel < infoPartie.joueurs.t[(infoPartie.premier+1) MOD 2].temps.actuel)) then
+		begin
+			infoPartie.premier := (infoPartie.premier+1) MOD 2;
+			infoPartie.hud.nom_premier^.valeur := concat('Premier : ', infoPartie.joueurs.t[infoPartie.premier].nom);
+		end;
+	end;
+	
 	//Tour
-	infoPartie.hud.actuelTour^.valeur := intToStr(infoPartie.joueurs.t[0].nbTour);
+	infoPartie.hud.actuelTour^.valeur := intToStr(infoPartie.joueurs.t[infoPartie.premier].nbTour);
 	
 	//Joueurs J1/J2
 	for i:=0 to infoPartie.joueurs.taille-1 do
@@ -103,7 +114,7 @@ begin
 		
 		//Affichage temps secteurs
 		if infoPartie.joueurs.t[i].temps.actuel <> 0 then
-			infoPartie.joueurs.t[i].hud.secteur[infoPartie.joueurs.t[i].temps.actuel-1]^.valeur := seconde_to_temps(infoPartie.temps.last-infoPartie.joueurs.t[i].temps.secteur[infoPartie.joueurs.t[i].temps.actuel-1]);
+			infoPartie.joueurs.t[i].hud.secteur[infoPartie.joueurs.t[i].temps.actuel-1]^.valeur := concat('S',intToStr(infoPartie.joueurs.t[i].temps.actuel), ' : ',seconde_to_temps(infoPartie.temps.last-infoPartie.joueurs.t[i].temps.secteur[infoPartie.joueurs.t[i].temps.actuel-1]));
 	end;
 end;
 
@@ -533,22 +544,22 @@ begin
 		
 		//Nouveau temps
 		infoPartie.temps.last := SDL_GetTicks();
-		writeln('1');
+		
 		//Intéraction utilisateur
 		course_user(infoPartie);
-writeln('2');
+
 		//Mouvements physique
 		frame_physique(physique, infoPartie);
-writeln('3');
+
 		//Evenements gameplay
 		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
-		writeln('4');
+
 		//Affichage
 		course_afficher(infoPartie, physique, fenetre);
-		writeln('5');
+
 		//Rendu
 		frame_afficher(fenetre);
-writeln('6');
+
 		//Mise a jour écran
 		SDL_Flip(fenetre.surface);
 		

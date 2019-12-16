@@ -80,6 +80,7 @@ type
 			taille: Integer;
 		end;
 		actif : boolean;
+		premier: shortInt;
 	end;
 	
 	T_JOUEUR = record
