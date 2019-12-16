@@ -71,6 +71,8 @@ type
 		hud: record	
             temps : P_UI_ELEMENT;
             global : P_UI_ELEMENT;
+            actuelTour : P_UI_ELEMENT;
+            nom_premier : P_UI_ELEMENT;
         end;
 		config: ^T_CONFIG; //PAR JEU_PARTIE
 		joueurs : record

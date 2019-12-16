@@ -306,7 +306,7 @@ begin
 	else
 		// Duplication vers format d'affichage
 		surface := SDL_DisplayFormat(temp);
-		
+   
 	//Libération surface chagée.
 	SDL_FreeSurface(temp);
 end;
