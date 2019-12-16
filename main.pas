@@ -92,6 +92,9 @@ begin
 	//Temps géneral
 	infoPartie.hud.temps^.valeur:= seconde_to_temps(infoPartie.temps.last-infoPartie.temps.debut);
 	
+	//Tour
+	infoPartie.hud.actuelTour^.valeur := intToStr(infoPartie.joueurs.t[0].nbTour);
+	
 	//Joueurs J1/J2
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
@@ -217,6 +220,11 @@ begin
 			//Hit ligne secteur actuel + 1
 			if (hit.data[j].n=1) AND isSameColor(c[infoPartie.joueurs.t[i].temps.actuel MOD 3],hit.data[j].c) then
 			begin
+				if infoPartie.joueurs.t[i].temps.actuel = 3 then
+				begin
+					infoPartie.joueurs.t[i].nbTour := infoPartie.joueurs.t[i].nbTour + 1;
+					infoPartie.joueurs.t[i].temps.tours[infoPartie.joueurs.t[i].nbTour-1] := infoPartie.temps.last-infoPartie.joueurs.t[i].temps.secteur[0];
+				end;
 				//Temps passage ligne
 				infoPartie.joueurs.t[i].temps.secteur[infoPartie.joueurs.t[i].temps.actuel MOD 3] := infoPartie.temps.last;
 				
@@ -224,6 +232,9 @@ begin
 				infoPartie.joueurs.t[i].temps.actuel := (infoPartie.joueurs.t[i].temps.actuel MOD 3) + 1;
 			end;
 	end;
+	
+	if infoPartie.config^.nbTour = infoPartie.joueurs.t[0].nbTour-1 then
+		infoPartie.actif := False;
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
@@ -251,9 +262,11 @@ begin
 		hb := hitBox(infoPartie.map.base, p, infoPartie.joueurs.t[i].voiture.physique^.a, c);
 		
 		//Calcul frottements
+
 		if hb.taille<>0 then
 			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
 		else
+
 			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 		
 		//Calcul positions
@@ -262,13 +275,14 @@ begin
 	end;
 end;
 
-procedure course_user(var infoPartie: T_GAMEPLAY;var actif: boolean);
+procedure course_user(var infoPartie: T_GAMEPLAY);
 var event_sdl: TSDL_Event;
 	event_clavier: PUint8;
 begin
 	//Vérification fermeture fenêtre
 	SDL_PollEvent(@event_sdl);
-	if event_sdl.type_=SDL_QUITEV then actif:=False;
+	if event_sdl.type_=SDL_QUITEV then
+		infoPartie.actif:=False;
 	
 	//Etat clavier
 	event_clavier := SDL_GetKeyState(NIL);
@@ -324,257 +338,217 @@ begin
 		//J2 Droite
 		if event_clavier[SDLK_KP3] = SDL_PRESSED then
 			infoPartie.joueurs.t[1].voiture.physique^.a := infoPartie.joueurs.t[1].voiture.physique^.a - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
-	end;  
-   ////////////////////////////////
-    ////////////////////////////////
-     ////////////////////////////////
-      ////////////////////////////////
-  ////////////////////////////////
-    if StrToInt(infoPartie.hud.actuelTour^.valeur)-1 = infoPartie.config^.nbTour then 
-        actif:= False;
-   ////////////////////////////////
-    ////////////////////////////////
-     ////////////////////////////////
-      ////////////////////////////////
-  ////////////////////////////////
+	end;
+	
+	if event_clavier[SDLK_H] = SDL_PRESSED then
+		infoPartie.actif := False;
+		
 end;
 
 procedure course_arrivee(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var actif : Boolean;
-    event_sdl: TSDL_Event;
-    panel : P_UI_ELEMENT;
+	event_sdl: TSDL_Event;
+	panel : P_UI_ELEMENT;
+	scores : T_SCORES;
+	i: ShortInt;
 begin
-    
-    infoPartie.hud.global^.style.display := False;
-    
-    ajouter_enfant(fenetre);
-    panel := fenetre.enfants.t[fenetre.enfants.taille-1];
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;				
+	
+	infoPartie.hud.global^.style.display := False;
+	
+	ajouter_enfant(fenetre);
+	panel := fenetre.enfants.t[fenetre.enfants.taille-1];
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;				
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=500;
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=150;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=150;
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('grey_panel.png');
-    
-        panel^.enfants.taille := 0;
-        
-        ajouter_enfant(panel^);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'FIN DE LA COURSE';
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 190;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 20;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
-        ajouter_enfant(panel^);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 20;	
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Circuit : ',infoPartie.config^.circuit.nom);
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 100;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
-        ajouter_enfant(panel^);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record circuit : ');
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 150;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
-        ajouter_enfant(panel^.enfants);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 150;	
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'RESUME DE LA COURSE';
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 150;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 250;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
-        ajouter_enfant(panel^);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 250;	
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := infoPartie.joueurs.t[0].nom;
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 170;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
+		
 
-        ajouter_enfant(panel^.enfants);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'T1 : ';
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T1 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[1]));
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 360;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        
-        ajouter_enfant(panel^.enfants);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'T2 : ';
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T2 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[2]));
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 410;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;
-        
-        ajouter_enfant(panel^.enfants);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur :='T3 : ';
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('T3 : ', seconde_to_temps(infoPartie.joueurs.t[0].temps.tours[3]));
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 460;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;		
-        
-        ajouter_enfant(panel^.enfants);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 460;		
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
 		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'Final : ';
 		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 520;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-		panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;
-        
-                  
-        if infoPartie.joueurs.taille = 1 then
-        begin
-            ajouter_enfant(panel^);
-            panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-            panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record personnel : ');
-            panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-            panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
-            panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 200;
-            panel^.enfants.t[panel^.enfants.taille-1]^.couleur.r :=0;
-            panel^.enfants.t[panel^.enfants.taille-1]^.couleur.g :=0;
-            panel^.enfants.t[panel^.enfants.taille-1]^.couleur.b :=0;	
-        end;
-                
-        if infoPartie.joueurs.taille = 2 then
-        begin
-            ajouter_enfant(panel^.enfants);
-            panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-            panel^.enfants.t[panel^.enfants.taille-1]^.valeur :=infoPartie.joueurs.t[1].nom;
-            panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-            panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 400;
-            panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
-        end;
-        
-        ajouter_enfant(panel^);
-        panel^.enfants.t[panel^.enfants.taille-1]^.typeE := image;
+		
+				  
+		if infoPartie.joueurs.taille = 1 then
+		begin
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record personnel : ');
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 200;	
+		end;
+				
+		if infoPartie.joueurs.taille = 2 then
+		begin
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur :=infoPartie.joueurs.t[1].nom;
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 400;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 310;
+		end;
+		
+		ajouter_enfant(panel^);
+		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := image;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 50;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 600;
 		panel^.enfants.t[panel^.enfants.taille-1]^.surface := IMG_Load('jeu_menu/back-button.png');
-        
-    actif := True;
-    
-    while actif do
-    begin
-        while SDL_PollEvent(@event_sdl) = 1 do
-        begin
-            case event_sdl.type_ of
-            
-            
-            SDL_KEYDOWN : 
-            begin
-            if event_sdl.key.keysym.sym = 13 then
-				begin
-					actif := False;
-                end;
-            end;
-            
-            end;
-        
-        end;
-        
-        frame_afficher(fenetre);
-        SDL_Flip(fenetre.surface);  
-    end;
-   
+		
+	actif := True;
+	
+	while actif do
+	begin
+		while SDL_PollEvent(@event_sdl) = 1 do
+			if (event_sdl.type_ = SDL_QUITEV)
+				OR (event_sdl.key.keysym.sym = 13)
+				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)
+				AND isInElement(panel^.enfants.t[panel^.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)) then
+				actif := False;
+		
+		frame_afficher(fenetre);
+		SDL_Flip(fenetre.surface);
+	end;
+
+	setLength(scores, infoPartie.joueurs.taille);
+	for i:=0 to length(scores)-1 do
+	begin
+			scores[i].nom := infoPartie.joueurs.t[i].nom;
+			scores[i].temps := min(infoPartie.joueurs.t[i].temps.tours);;
+	end;
+	scoreMaj(concat('circuits/',infoPartie.config^.circuit.nom, '.dat'), scores);
+	
+
 end;
 
 procedure course_depart(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
 
-    afficher_camera(infoPartie, fenetre);
-    infoPartie.hud.global^.style.display := False;
-    
-    //Feu
-    ajouter_enfant(fenetre);
+	afficher_camera(infoPartie, fenetre);
+	infoPartie.hud.global^.style.display := False;
+	
+	//Feu
+	ajouter_enfant(fenetre);
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;					
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.x:=100;
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=100;
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.y:=100;
 	
 	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feurouge.png');
-    
-    frame_afficher(fenetre);
-    SDL_Flip(fenetre.surface);
-    Sleep(1000);
-    SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
-    
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuorange.png');
-    frame_afficher(fenetre);
-    SDL_Flip(fenetre.surface);
-    Sleep(1000);
-    
-    SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuvert.png');
-    frame_afficher(fenetre);
-    SDL_Flip(fenetre.surface);
-    Sleep(1000);
-    
-    fenetre.enfants.t[fenetre.enfants.taille-1]^.style.display := False;
-    
-    infoPartie.hud.global^.style.display := True;
+	
+	frame_afficher(fenetre);
+	SDL_Flip(fenetre.surface);
+	Sleep(1000);
+	SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuorange.png');
+	frame_afficher(fenetre);
+	SDL_Flip(fenetre.surface);
+	Sleep(1000);
+	
+	SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := IMG_Load('feuvert.png');
+	frame_afficher(fenetre);
+	SDL_Flip(fenetre.surface);
+	Sleep(1000);
+	
+	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.display := False;
+	
+	infoPartie.hud.global^.style.display := True;
    
-    infoPartie.temps.debut := SDL_GetTicks();
+	infoPartie.temps.debut := SDL_GetTicks();
 	infoPartie.temps.last := infoPartie.temps.debut;
 end;
 
 procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);{Main Loop}
-var actif: boolean;
-	timer: array[0..7] of LongInt; {départ, boucle, delay,user,physique,gameplay,courseAfficher,frameAfficher}
+var	timer: array[0..7] of LongInt; {départ, boucle, delay,user,physique,gameplay,courseAfficher,frameAfficher}
 	x,y: tcrtcoord;
 begin
 	//Procédure départ
 	course_depart(infoPartie, fenetre);
 	
 	//Boucle de jeu
-	actif:=true;
-	while actif do
+	infoPartie.actif:=True;
+	while infoPartie.actif do
 	begin
 		//Calcul dt pour interpolation
 		infoPartie.temps.dt := (SDL_GetTicks()-infoPartie.temps.last)/1000;
 		
 		//Nouveau temps
 		infoPartie.temps.last := SDL_GetTicks();
-		
+		writeln('1');
 		//Intéraction utilisateur
-		course_user(infoPartie, actif);
-
+		course_user(infoPartie);
+writeln('2');
 		//Mouvements physique
 		frame_physique(physique, infoPartie);
-
+writeln('3');
 		//Evenements gameplay
 		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
-		
+		writeln('4');
 		//Affichage
 		course_afficher(infoPartie, physique, fenetre);
-		
+		writeln('5');
 		//Rendu
 		frame_afficher(fenetre);
-
+writeln('6');
 		//Mise a jour écran
 		SDL_Flip(fenetre.surface);
 		
@@ -604,11 +578,11 @@ begin
 end;
 
 procedure partie_init(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
-var i: Integer;
+var i,j: Integer;
 	fond_hd, fond_hg, fond_j1, fond_j2, circuit_nom, temps_texte, j1_pseudo, j2_pseudo,tour_texte1,tour_texte2: P_UI_ELEMENT;
 	
 begin
-    
+	
 	infoPartie.temps.debut:=0;
 	infoPartie.temps.fin:=0;
 	infoPartie.temps.last:=0;
@@ -617,14 +591,14 @@ begin
 	infoPartie.map.current := NIL;
 	fenetre.enfants.taille:=0;
 	physique.taille:=0;
-    
+	
 	//Fond ecran
 	fenetre.typeE:=couleur;
 	fenetre.couleur.r:=57;
 	fenetre.couleur.g:=181;
 	fenetre.couleur.b:=74;
 	fenetre.style.a:=255;
-    
+	
 	//Load Map
 	ajouter_enfant(fenetre);
 	imageLoad(infoPartie.config^.circuit.chemin, infoPartie.map.base, false);
@@ -642,6 +616,9 @@ begin
 		infoPartie.joueurs.t[i].voiture.chemin := infoPartie.config^.joueurs.t[i].chemin;
 		infoPartie.joueurs.t[i].nom := infoPartie.config^.joueurs.t[i].nom;
 		infoPartie.joueurs.t[i].temps.actuel := 0;
+		infoPartie.joueurs.t[i].nbTour := 1;
+		for j:=1 to 3 do
+			infoPartie.joueurs.t[i].temps.tours[j]:=0;
 		
 		ajouter_physique(physique);
 		ajouter_enfant(fenetre);
@@ -655,14 +632,14 @@ begin
 		infoPartie.joueurs.t[i].voiture.ui^.typeE := image;
 		
 	end;
-    
+	
 	FreeMem(infoPartie.config^.joueurs.t, infoPartie.config^.joueurs.taille*SizeOf(T_CONFIG_JOUEUR));
 	infoPartie.config^.joueurs.taille:=0;
    
 	//fin boucle
-    
-    //afficher_camera(infoPartie,fenetre);
-    
+	
+	//afficher_camera(infoPartie,fenetre);
+	
 	//Global
 	ajouter_enfant(fenetre);
 	infoPartie.hud.global := fenetre.enfants.t[fenetre.enfants.taille-1];
@@ -675,183 +652,183 @@ begin
 	infoPartie.hud.global^.etat.h:=900;
 	infoPartie.hud.global^.surface:= SDL_CreateRGBSurface(0, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.w, fenetre.enfants.t[fenetre.enfants.taille-1]^.etat.h, 32, 0,0,0,0);
 	
-        //HUD Fond HautDroite
-        ajouter_enfant(infoPartie.hud.global^);
-        fond_hd := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
-        fond_hd^.typeE := couleur;
-        fond_hd^.couleur.r:=0;
-        fond_hd^.couleur.g:=0;
-        fond_hd^.couleur.b:=0;
-        fond_hd^.style.a :=128;
-        fond_hd^.etat.w:=300;
-        fond_hd^.etat.h:=90;
-        fond_hd^.etat.x:=1300;
-        fond_hd^.surface:= SDL_CreateRGBSurface(0,fond_hd^.etat.w,fond_hd^.etat.h, 32, 0,0,0,0);
-    
-            fond_hd^.enfants.taille := 0;
-           
-            //HUD Circuit nom
-            ajouter_enfant(fond_hd^);										
-            circuit_nom:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
-            circuit_nom^.typeE := texte;
-            circuit_nom^.valeur := Concat('Circuit : ',infoPartie.config^.circuit.nom);
-            circuit_nom^.police := TTF_OpenFont('arial.ttf',25);
-            circuit_nom^.couleur.r :=0;
-            circuit_nom^.couleur.g :=0;
-            circuit_nom^.couleur.b :=0;
-            circuit_nom^.etat.x:=5;
-            circuit_nom^.etat.y:=10;
-            
-            //HUD Temps texte
-            ajouter_enfant(fond_hd^);
-            temps_texte:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
-            temps_texte^.typeE := texte;
-            temps_texte^.valeur := 'Temps : ';
-            temps_texte^.police := TTF_OpenFont('arial.ttf',25);
-            temps_texte^.couleur.r :=0;
-            temps_texte^.couleur.g :=0;
-            temps_texte^.couleur.b :=0;
-            temps_texte^.etat.x:=5;
-            temps_texte^.etat.y:=50;
-            
-            //HUD Temps valeur
-            ajouter_enfant(fond_hd^);
-            infoPartie.hud.temps:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
-            infoPartie.hud.temps^.typeE := texte;
-            infoPartie.hud.temps^.valeur := infoPartie.hud.temps^.valeur;
-            infoPartie.hud.temps^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.hud.temps^.couleur.r :=0;
-            infoPartie.hud.temps^.couleur.g :=0;
-            infoPartie.hud.temps^.couleur.b :=0;
-            infoPartie.hud.temps^.etat.x:=100;
-            infoPartie.hud.temps^.etat.y:=50;
-        
-        //HUD Fond J1
-        ajouter_enfant(infoPartie.hud.global^);
-        fond_j1 :=infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
-        fond_j1^.typeE := couleur;
-        fond_j1^.couleur.r:=0;
-        fond_j1^.couleur.g:=0;
-        fond_j1^.couleur.b:=0;
-        fond_j1^.style.a :=128;
-        fond_j1^.etat.w:=200;
-        fond_j1^.etat.h:=200; 
-        fond_j1^.etat.x:=0;
-        fond_j1^.etat.y:=700;
-        fond_j1^.surface:= SDL_CreateRGBSurface(0, fond_j1^.etat.w, fond_j1^.etat.h, 32, 0,0,0,0);
-        
-            fond_j1^.enfants.taille :=0;
-            
-            //HUD Pseudo J1
-            ajouter_enfant(fond_j1^);
-            j1_pseudo:= fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
-            j1_pseudo^.typeE := texte;
-            j1_pseudo^.valeur := Concat('J1 : ',infoPartie.joueurs.t[0].nom);
-            j1_pseudo^.police := TTF_OpenFont('arial.ttf',25);
-            j1_pseudo^.couleur.r :=235;
-            j1_pseudo^.couleur.g :=130;
-            j1_pseudo^.couleur.b :=24;
-            j1_pseudo^.etat.x:=5;
-            j1_pseudo^.etat.y:=5;
+		//HUD Fond HautDroite
+		ajouter_enfant(infoPartie.hud.global^);
+		fond_hd := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
+		fond_hd^.typeE := couleur;
+		fond_hd^.couleur.r:=0;
+		fond_hd^.couleur.g:=0;
+		fond_hd^.couleur.b:=0;
+		fond_hd^.style.a :=128;
+		fond_hd^.etat.w:=300;
+		fond_hd^.etat.h:=90;
+		fond_hd^.etat.x:=1300;
+		fond_hd^.surface:= SDL_CreateRGBSurface(0,fond_hd^.etat.w,fond_hd^.etat.h, 32, 0,0,0,0);
+	
+			fond_hd^.enfants.taille := 0;
+		   
+			//HUD Circuit nom
+			ajouter_enfant(fond_hd^);										
+			circuit_nom:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
+			circuit_nom^.typeE := texte;
+			circuit_nom^.valeur := Concat('Circuit : ',infoPartie.config^.circuit.nom);
+			circuit_nom^.police := TTF_OpenFont('arial.ttf',25);
+			circuit_nom^.couleur.r :=0;
+			circuit_nom^.couleur.g :=0;
+			circuit_nom^.couleur.b :=0;
+			circuit_nom^.etat.x:=5;
+			circuit_nom^.etat.y:=10;
+			
+			//HUD Temps texte
+			ajouter_enfant(fond_hd^);
+			temps_texte:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
+			temps_texte^.typeE := texte;
+			temps_texte^.valeur := 'Temps : ';
+			temps_texte^.police := TTF_OpenFont('arial.ttf',25);
+			temps_texte^.couleur.r :=0;
+			temps_texte^.couleur.g :=0;
+			temps_texte^.couleur.b :=0;
+			temps_texte^.etat.x:=5;
+			temps_texte^.etat.y:=50;
+			
+			//HUD Temps valeur
+			ajouter_enfant(fond_hd^);
+			infoPartie.hud.temps:=fond_hd^.enfants.t[fond_hd^.enfants.taille-1];
+			infoPartie.hud.temps^.typeE := texte;
+			infoPartie.hud.temps^.valeur := infoPartie.hud.temps^.valeur;
+			infoPartie.hud.temps^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.hud.temps^.couleur.r :=0;
+			infoPartie.hud.temps^.couleur.g :=0;
+			infoPartie.hud.temps^.couleur.b :=0;
+			infoPartie.hud.temps^.etat.x:=100;
+			infoPartie.hud.temps^.etat.y:=50;
+		
+		//HUD Fond J1
+		ajouter_enfant(infoPartie.hud.global^);
+		fond_j1 :=infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
+		fond_j1^.typeE := couleur;
+		fond_j1^.couleur.r:=0;
+		fond_j1^.couleur.g:=0;
+		fond_j1^.couleur.b:=0;
+		fond_j1^.style.a :=128;
+		fond_j1^.etat.w:=200;
+		fond_j1^.etat.h:=200; 
+		fond_j1^.etat.x:=0;
+		fond_j1^.etat.y:=700;
+		fond_j1^.surface:= SDL_CreateRGBSurface(0, fond_j1^.etat.w, fond_j1^.etat.h, 32, 0,0,0,0);
+		
+			fond_j1^.enfants.taille :=0;
+			
+			//HUD Pseudo J1
+			ajouter_enfant(fond_j1^);
+			j1_pseudo:= fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
+			j1_pseudo^.typeE := texte;
+			j1_pseudo^.valeur := Concat('J1 : ',infoPartie.joueurs.t[0].nom);
+			j1_pseudo^.police := TTF_OpenFont('arial.ttf',25);
+			j1_pseudo^.couleur.r :=235;
+			j1_pseudo^.couleur.g :=130;
+			j1_pseudo^.couleur.b :=24;
+			j1_pseudo^.etat.x:=5;
+			j1_pseudo^.etat.y:=5;
 
-            //HUD Vitesse
-            ajouter_enfant(fond_j1^);
-            infoPartie.joueurs.t[0].hud.vitesse:=fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
-            infoPartie.joueurs.t[0].hud.vitesse^.typeE := texte;
-            infoPartie.joueurs.t[0].hud.vitesse^.valeur := 'iVitesse';
-            infoPartie.joueurs.t[0].hud.vitesse^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[0].hud.vitesse^.couleur.r :=0;
-            infoPartie.joueurs.t[0].hud.vitesse^.couleur.g :=0;
-            infoPartie.joueurs.t[0].hud.vitesse^.couleur.b :=0;
-            infoPartie.joueurs.t[0].hud.vitesse^.etat.x := 5;
-            infoPartie.joueurs.t[0].hud.vitesse^.etat.y := 40;
-            
+			//HUD Vitesse
+			ajouter_enfant(fond_j1^);
+			infoPartie.joueurs.t[0].hud.vitesse:=fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
+			infoPartie.joueurs.t[0].hud.vitesse^.typeE := texte;
+			infoPartie.joueurs.t[0].hud.vitesse^.valeur := 'iVitesse';
+			infoPartie.joueurs.t[0].hud.vitesse^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[0].hud.vitesse^.couleur.r :=0;
+			infoPartie.joueurs.t[0].hud.vitesse^.couleur.g :=0;
+			infoPartie.joueurs.t[0].hud.vitesse^.couleur.b :=0;
+			infoPartie.joueurs.t[0].hud.vitesse^.etat.x := 5;
+			infoPartie.joueurs.t[0].hud.vitesse^.etat.y := 40;
+			
 			//HUD Secteur 1
 			ajouter_enfant(fond_j1^);
-            infoPartie.joueurs.t[0].hud.secteur[0] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
+			infoPartie.joueurs.t[0].hud.secteur[0] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
 			infoPartie.joueurs.t[0].hud.secteur[0]^.typeE := texte;
-            infoPartie.joueurs.t[0].hud.secteur[0]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.r :=0;
-            infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.g :=0;
-            infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.b :=0;
-            infoPartie.joueurs.t[0].hud.secteur[0]^.etat.x := 5;
-            infoPartie.joueurs.t[0].hud.secteur[0]^.etat.y := 90;
-            
-            //HUD Secteur 2
+			infoPartie.joueurs.t[0].hud.secteur[0]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.r :=0;
+			infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.g :=0;
+			infoPartie.joueurs.t[0].hud.secteur[0]^.couleur.b :=0;
+			infoPartie.joueurs.t[0].hud.secteur[0]^.etat.x := 5;
+			infoPartie.joueurs.t[0].hud.secteur[0]^.etat.y := 90;
+			
+			//HUD Secteur 2
 			ajouter_enfant(fond_j1^);
-            infoPartie.joueurs.t[0].hud.secteur[1] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
+			infoPartie.joueurs.t[0].hud.secteur[1] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
 			infoPartie.joueurs.t[0].hud.secteur[1]^.typeE := texte;
-            infoPartie.joueurs.t[0].hud.secteur[1]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.r :=0;
-            infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.g :=0;
-            infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.b :=0;
-            infoPartie.joueurs.t[0].hud.secteur[1]^.etat.x := 5;
-            infoPartie.joueurs.t[0].hud.secteur[1]^.etat.y := 120;
-            
-            //HUD Secteur 3
+			infoPartie.joueurs.t[0].hud.secteur[1]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.r :=0;
+			infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.g :=0;
+			infoPartie.joueurs.t[0].hud.secteur[1]^.couleur.b :=0;
+			infoPartie.joueurs.t[0].hud.secteur[1]^.etat.x := 5;
+			infoPartie.joueurs.t[0].hud.secteur[1]^.etat.y := 120;
+			
+			//HUD Secteur 3
 			ajouter_enfant(fond_j1^);
-            infoPartie.joueurs.t[0].hud.secteur[2] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
+			infoPartie.joueurs.t[0].hud.secteur[2] := fond_j1^.enfants.t[fond_j1^.enfants.taille-1];
 			infoPartie.joueurs.t[0].hud.secteur[2]^.typeE := texte;
-            infoPartie.joueurs.t[0].hud.secteur[2]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.r :=0;
-            infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.g :=0;
-            infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.b :=0;
-            infoPartie.joueurs.t[0].hud.secteur[2]^.etat.x := 5;
-            infoPartie.joueurs.t[0].hud.secteur[2]^.etat.y := 150;
-            
-        //HUD Fond HG
-        ajouter_enfant(infoPartie.hud.global^.enfants);
-        fond_hg := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
-        fond_hg^.typeE := couleur;
-        fond_hg^.couleur.r:=0;
-        fond_hg^.couleur.g:=0;
-        fond_hg^.couleur.b:=0;
-        fond_hg^.style.a :=128;
-        fond_hg^.etat.w:=250;
-        fond_hg^.etat.h:=50;
-        fond_hg^.surface:= SDL_CreateRGBSurface(0, fond_hg^.etat.w, fond_hg^.etat.h, 32, 0,0,0,0);
-       
-            fond_hg^.enfants.taille := 0;
-            
-            ajouter_enfant(fond_hg^.enfants);
-            tour_texte1 :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
-            tour_texte1^.typeE := texte;
-            tour_texte1^.valeur := 'Tour ';
-            tour_texte1^.police := TTF_OpenFont('arial.ttf',25);
-            tour_texte1^.couleur.r :=235;
-            tour_texte1^.couleur.g :=130;
-            tour_texte1^.couleur.b :=24;
-            tour_texte1^.etat.x:=5;
-            tour_texte1^.etat.y:=10;
-            
-            //HUD Tour actuel
-            ajouter_enfant(fond_hg^.enfants);
-            infoPartie.hud.actuelTour :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
-            infoPartie.hud.actuelTour^.typeE := texte;
-            infoPartie.hud.actuelTour^.valeur := '1';
-            infoPartie.hud.actuelTour^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.hud.actuelTour^.couleur.r :=235;
-            infoPartie.hud.actuelTour^.couleur.g :=130;
-            infoPartie.hud.actuelTour^.couleur.b :=24;
-            infoPartie.hud.actuelTour^.etat.x:=60;
-            infoPartie.hud.actuelTour^.etat.y:=10;		
+			infoPartie.joueurs.t[0].hud.secteur[2]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.r :=0;
+			infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.g :=0;
+			infoPartie.joueurs.t[0].hud.secteur[2]^.couleur.b :=0;
+			infoPartie.joueurs.t[0].hud.secteur[2]^.etat.x := 5;
+			infoPartie.joueurs.t[0].hud.secteur[2]^.etat.y := 150;
+			
+		//HUD Fond HG
+		ajouter_enfant(infoPartie.hud.global^);
+		fond_hg := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
+		fond_hg^.typeE := couleur;
+		fond_hg^.couleur.r:=0;
+		fond_hg^.couleur.g:=0;
+		fond_hg^.couleur.b:=0;
+		fond_hg^.style.a :=128;
+		fond_hg^.etat.w:=250;
+		fond_hg^.etat.h:=50;
+		fond_hg^.surface:= SDL_CreateRGBSurface(0, fond_hg^.etat.w, fond_hg^.etat.h, 32, 0,0,0,0);
+	   
+			fond_hg^.enfants.taille := 0;
+			
+			ajouter_enfant(fond_hg^);
+			tour_texte1 :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
+			tour_texte1^.typeE := texte;
+			tour_texte1^.valeur := 'Tour ';
+			tour_texte1^.police := TTF_OpenFont('arial.ttf',25);
+			tour_texte1^.couleur.r :=235;
+			tour_texte1^.couleur.g :=130;
+			tour_texte1^.couleur.b :=24;
+			tour_texte1^.etat.x:=5;
+			tour_texte1^.etat.y:=10;
+			
+			//HUD Tour actuel
+			ajouter_enfant(fond_hg^);
+			infoPartie.hud.actuelTour :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
+			infoPartie.hud.actuelTour^.typeE := texte;
+			infoPartie.hud.actuelTour^.valeur := '1';
+			infoPartie.hud.actuelTour^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.hud.actuelTour^.couleur.r :=235;
+			infoPartie.hud.actuelTour^.couleur.g :=130;
+			infoPartie.hud.actuelTour^.couleur.b :=24;
+			infoPartie.hud.actuelTour^.etat.x:=60;
+			infoPartie.hud.actuelTour^.etat.y:=10;		
    
-            ajouter_enfant(fond_hg^.enfants);
-            tour_texte2 :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
-            tour_texte2^.typeE := texte;
-            tour_texte2^.valeur := Concat(' / ',IntToStr(infoPartie.config^.nbTour));
-            tour_texte2^.police := TTF_OpenFont('arial.ttf',25);
-            tour_texte2^.couleur.r :=235;
-            tour_texte2^.couleur.g :=130;
-            tour_texte2^.couleur.b :=24;
-            tour_texte2^.etat.x:=70;
-            tour_texte2^.etat.y:=10;
+			ajouter_enfant(fond_hg^);
+			tour_texte2 :=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
+			tour_texte2^.typeE := texte;
+			tour_texte2^.valeur := Concat(' / ',IntToStr(infoPartie.config^.nbTour));
+			tour_texte2^.police := TTF_OpenFont('arial.ttf',25);
+			tour_texte2^.couleur.r :=235;
+			tour_texte2^.couleur.g :=130;
+			tour_texte2^.couleur.b :=24;
+			tour_texte2^.etat.x:=70;
+			tour_texte2^.etat.y:=10;
 
-    if infoPartie.joueurs.taille = 2 then
-    begin
+	if infoPartie.joueurs.taille = 2 then
+	begin
 		//HUD Fond J2
 		ajouter_enfant(infoPartie.hud.global^);
-        fond_j2 := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
+		fond_j2 := infoPartie.hud.global^.enfants.t[infoPartie.hud.global^.enfants.taille-1];
 		fond_j2^.typeE := couleur;
 		fond_j2^.couleur.r:=0;
 		fond_j2^.couleur.g:=0;
@@ -863,7 +840,7 @@ begin
 		fond_j2^.etat.y:=700;
 		fond_j2^.surface:= SDL_CreateRGBSurface(0, fond_j2^.etat.w, fond_j2^.etat.h, 32, 0,0,0,0);
 
-            fond_j2^.enfants.taille :=0;
+			fond_j2^.enfants.taille :=0;
 
 			//HUD Pseudo J2
 			ajouter_enfant(fond_j2^);
@@ -888,66 +865,65 @@ begin
 			infoPartie.joueurs.t[1].hud.vitesse^.couleur.b :=0;
 			infoPartie.joueurs.t[1].hud.vitesse^.etat.x := 5;
 			infoPartie.joueurs.t[1].hud.vitesse^.etat.y := 40;
-            
-            //HUD Secteur 1
+			
+			//HUD Secteur 1
 			ajouter_enfant(fond_j2^);
-            infoPartie.joueurs.t[1].hud.secteur[0] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[0] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
 			infoPartie.joueurs.t[1].hud.secteur[0]^.typeE := texte;
-            infoPartie.joueurs.t[1].hud.secteur[0]^.valeur := 'secteur 1';
-            infoPartie.joueurs.t[1].hud.secteur[0]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.r :=0;
-            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.g :=0;
-            infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.b :=0;
-            infoPartie.joueurs.t[1].hud.secteur[0]^.etat.x := 5;
-            infoPartie.joueurs.t[1].hud.secteur[0]^.etat.y := 70;
-            
-            //HUD Secteur 2
+			infoPartie.joueurs.t[1].hud.secteur[0]^.valeur := 'secteur 1';
+			infoPartie.joueurs.t[1].hud.secteur[0]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.r :=0;
+			infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.g :=0;
+			infoPartie.joueurs.t[1].hud.secteur[0]^.couleur.b :=0;
+			infoPartie.joueurs.t[1].hud.secteur[0]^.etat.x := 5;
+			infoPartie.joueurs.t[1].hud.secteur[0]^.etat.y := 70;
+			
+			//HUD Secteur 2
 			ajouter_enfant(fond_j2^);
-            infoPartie.joueurs.t[1].hud.secteur[1] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[1] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
 			infoPartie.joueurs.t[1].hud.secteur[1]^.typeE := texte;
-            infoPartie.joueurs.t[1].hud.secteur[1]^.valeur := 'secteur 2';
-            infoPartie.joueurs.t[1].hud.secteur[1]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.r :=0;
-            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.g :=0;
-            infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.b :=0;
-            infoPartie.joueurs.t[1].hud.secteur[1]^.etat.x := 5;
-            infoPartie.joueurs.t[1].hud.secteur[1]^.etat.y := 100;
-            
-            //HUD Secteur 3
+			infoPartie.joueurs.t[1].hud.secteur[1]^.valeur := 'secteur 2';
+			infoPartie.joueurs.t[1].hud.secteur[1]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.r :=0;
+			infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.g :=0;
+			infoPartie.joueurs.t[1].hud.secteur[1]^.couleur.b :=0;
+			infoPartie.joueurs.t[1].hud.secteur[1]^.etat.x := 5;
+			infoPartie.joueurs.t[1].hud.secteur[1]^.etat.y := 100;
+			
+			//HUD Secteur 3
 			ajouter_enfant(fond_j2^);
-            infoPartie.joueurs.t[1].hud.secteur[2] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
+			infoPartie.joueurs.t[1].hud.secteur[2] := fond_j2^.enfants.t[fond_j2^.enfants.taille-1];
 			infoPartie.joueurs.t[1].hud.secteur[2]^.typeE := texte;
-            infoPartie.joueurs.t[1].hud.secteur[2]^.valeur := 'secteur 3';
-            infoPartie.joueurs.t[1].hud.secteur[2]^.police := TTF_OpenFont('arial.ttf',25);
-            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.r :=0;
-            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.g :=0;
-            infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.b :=0;
-            infoPartie.joueurs.t[1].hud.secteur[2]^.etat.x := 5;
-            infoPartie.joueurs.t[1].hud.secteur[2]^.etat.y := 130;
-        
-        fond_hg^.etat.h:=100;
-        fond_hg^.surface:= SDL_CreateRGBSurface(0, fond_hg^.etat.w, fond_hg^.etat.h, 32, 0,0,0,0);
-           
-        //HUD premier
-        ajouter_enfant(fond_hg^.enfants);
-        infoPartie.hud.nom_premier:=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
-        infoPartie.hud.nom_premier^.typeE := texte;
-        infoPartie.hud.nom_premier^.valeur := Concat('Premier : ',infoPartie.joueurs.t[0].nom);
-        infoPartie.hud.nom_premier^.police := TTF_OpenFont('arial.ttf',25);
-        infoPartie.hud.nom_premier^.couleur.r :=235;
-        infoPartie.hud.nom_premier^.couleur.g :=130;
-        infoPartie.hud.nom_premier^.couleur.b :=24;
-        infoPartie.hud.nom_premier^.etat.x:=5;
-        infoPartie.hud.nom_premier^.etat.y:=50;
-    end;
-        
+			infoPartie.joueurs.t[1].hud.secteur[2]^.valeur := 'secteur 3';
+			infoPartie.joueurs.t[1].hud.secteur[2]^.police := TTF_OpenFont('arial.ttf',25);
+			infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.r :=0;
+			infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.g :=0;
+			infoPartie.joueurs.t[1].hud.secteur[2]^.couleur.b :=0;
+			infoPartie.joueurs.t[1].hud.secteur[2]^.etat.x := 5;
+			infoPartie.joueurs.t[1].hud.secteur[2]^.etat.y := 130;
+		
+		fond_hg^.etat.h:=100;
+		fond_hg^.surface:= SDL_CreateRGBSurface(0, fond_hg^.etat.w, fond_hg^.etat.h, 32, 0,0,0,0);
+		   
+		//HUD premier
+		ajouter_enfant(fond_hg^);
+		infoPartie.hud.nom_premier:=fond_hg^.enfants.t[fond_hg^.enfants.taille-1];
+		infoPartie.hud.nom_premier^.typeE := texte;
+		infoPartie.hud.nom_premier^.valeur := Concat('Premier : ',infoPartie.joueurs.t[0].nom);
+		infoPartie.hud.nom_premier^.police := TTF_OpenFont('arial.ttf',25);
+		infoPartie.hud.nom_premier^.couleur.r :=235;
+		infoPartie.hud.nom_premier^.couleur.g :=130;
+		infoPartie.hud.nom_premier^.couleur.b :=24;
+		infoPartie.hud.nom_premier^.etat.x:=5;
+		infoPartie.hud.nom_premier^.etat.y:=50;
+	end;
+		
 end;
 
 procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
 	infoPartie: T_GAMEPLAY;
 begin
-    
 	infoPartie.config := @config;
 	partie_init(infoPartie, physique, fenetre);
 	partie_course(infoPartie, physique, fenetre);
@@ -962,7 +938,7 @@ var event_sdl: TSDL_Event;
 	
 	tabCircuit : array [0..1] of ansiString;
   tabMode : array [0..1] of ansiString;
-    
+	
 	actuelMode, actuelCircuit: ShortInt;
 	actuelSkin: array[0..1] of ShortInt;
 	
@@ -985,7 +961,7 @@ begin
 	
 	//Texte mode de jeu
 	tabMode[0] := 'Contre-la-montre'; 
-    tabMode[1] := '1 vs 1';
+	tabMode[1] := '1 vs 1';
 
 	//Texte nom circuits
 	tabCircuit[0] := 'first';
@@ -1221,7 +1197,7 @@ begin
 					if event_sdl.key.keysym.sym = 13 then
 					begin
 						//Retour au menu en fin de partie
-						actif := True;
+						actif := False;
 
 						
 						//Remplissage configuration
@@ -1267,18 +1243,18 @@ begin
 		//Sélection mode de jeu (gauche)
 		if  panel[1]^.enfants.t[4]^.valeur = '1' then
 		begin
-            if actuelMode-1<0 then //Effet infini
-            begin
-                actuelMode := 1;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
-            end
-            else
-            begin
-                actuelMode := actuelMode-1;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
-            end;
-            
-            //Fin évenement
+			if actuelMode-1<0 then //Effet infini
+			begin
+				actuelMode := 1;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+			end
+			else
+			begin
+				actuelMode := actuelMode-1;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+			end;
+			
+			//Fin évenement
 			panel[1]^.enfants.t[4]^.valeur := '0';
 		end;
 		
@@ -1286,33 +1262,33 @@ begin
 		if  panel[1]^.enfants.t[5]^.valeur = '1' then
 		begin
 			if actuelMode+1 > length(tabMode)-1 then //Effet infini
-            begin
-                actuelMode := 0;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
-            end
-            else
-            begin
-                actuelMode := actuelMode+1;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
-            end;
-            
-            //Fin évenement
+			begin
+				actuelMode := 0;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+			end
+			else
+			begin
+				actuelMode := actuelMode+1;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-7]^.valeur := tabMode[actuelMode];
+			end;
+			
+			//Fin évenement
 			panel[1]^.enfants.t[5]^.valeur := '0';
 		end;
 		
 		//Sélection circuit (gauche)
 		if  panel[1]^.enfants.t[6]^.valeur = '1' then
 		begin
-            if actuelCircuit-1 < 0 then //Effet infini
-            begin
-                actuelCircuit := length(tabCircuit)-1;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-            end
-            else
-            begin
-                actuelCircuit := actuelCircuit-1;
+			if actuelCircuit-1 < 0 then //Effet infini
+			begin
+				actuelCircuit := length(tabCircuit)-1;
 				panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-            end;
+			end
+			else
+			begin
+				actuelCircuit := actuelCircuit-1;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
+			end;
 
 			//Fin évenement
 			panel[1]^.enfants.t[6]^.valeur := '0'
@@ -1321,16 +1297,16 @@ begin
 		//Sélection circuit (droite)
 		if  panel[1]^.enfants.t[7]^.valeur = '1' then
 		begin
-            if actuelCircuit+1 > length(tabCircuit)-1 then //Effet infini
-            begin
-                actuelCircuit := 0;
-                panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-            end
-            else
-            begin
-                actuelCircuit := actuelCircuit+1;
+			if actuelCircuit+1 > length(tabCircuit)-1 then //Effet infini
+			begin
+				actuelCircuit := 0;
 				panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
-            end;
+			end
+			else
+			begin
+				actuelCircuit := actuelCircuit+1;
+				panel[1]^.enfants.t[panel[1]^.enfants.taille-5]^.valeur := tabCircuit[actuelCircuit];
+			end;
 			
 			//Fin évenement
 			panel[1]^.enfants.t[7]^.valeur := '0';
@@ -1524,7 +1500,8 @@ begin
 						
 						//Délai puis score
 						Sleep(300);
-						score(fenetre);
+						test();
+						
 					end;
 					if isInElement(fenetre.enfants.t[fenetre.enfants.taille-2]^, event_sdl.motion.x, event_sdl.motion.y) and (event_sdl.button.state = SDL_PRESSED) and (event_sdl.button.button = 1) then
 					begin

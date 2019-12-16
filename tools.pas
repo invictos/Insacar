@@ -11,7 +11,6 @@ uses sdl, sdl_gfx, sdl_image, sysutils, INSACAR_TYPES;
 function seconde_to_temps(t: LongInt): String;
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
 procedure ajouter_enfant(var element: T_UI_ELEMENT);
-function pixel_get(surface: PSDL_Surface; x,y: Integer): TSDL_Color;
 function isInElement(element: T_UI_ELEMENT; x, y: Integer): Boolean;
 function hitBox(surface: PSDL_Surface; p: SDL_Rect; a: Real; colors: array of TSDL_Color): T_HITBOX_COLOR;
 function isSameColor(a: TSDL_Color; b: TSDL_Color): Boolean;
@@ -19,6 +18,8 @@ function ZoomMin(a,b: Real): Double;
 procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
 procedure updatePseudo(k : TSDLKey; var pseudo: String);
 procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
+function min(liste : array of LongInt): LongInt;
+function test(): boolean;
 
 implementation
 
@@ -400,33 +401,34 @@ var scores: T_SCORES;
 	i,j, nbDone:shortInt;
 	done: array of boolean;
 begin
-	scoreLire('scores.dat', scores);
+	scoreLire(fichier, scores);
 
 	setLength(done, length(miseAJour));
 	for i:=0 to length(done)-1 do
 		done[i] := False;
-
+	
 	nbDone := 0;
 	i:=0;
-	repeat
+	while (nbDone <> length(miseAJour)) AND (i <> length(scores)) do
+	begin
 		j:=0;
 		repeat
 			if scores[i].nom = miseAJour[j].nom then
 			begin
 				done[j] := True;
 				nbDone := nbDone+1;
-				if scores[i].temps < miseAJour[j].temps then
+				if (scores[i].temps > miseAJour[j].temps) AND (miseAJour[j].temps <> 0) then
 					scores[i].temps := miseAJour[j].temps;
 			end;
 			j := j+1;
 		until (scores[i].nom = miseAJour[j-1].nom) OR (j = length(miseAJour));
 		i := i+1;
-	until (nbDone = length(miseAJour)) OR (i = length(scores)-1);
+	end; 
 
 	if nbDone <> length(miseAJour) then
 	begin
 		for i:=0 to length(done)-1 do
-			if not done[i] then
+			if (not done[i]) AND (miseAJour[i].temps <> 0) then
 			begin
 				setLength(scores, length(scores)+1);
 				scores[length(scores)-1].nom := miseAJour[i].nom;
@@ -434,9 +436,32 @@ begin
 			end;
 	end;
 
-	scoreEcrire('scores.dat', scores);
+	scoreEcrire(fichier, scores);
 end;
 
+
+function min(liste : array of LongInt): LongInt;
+var i: ShortInt;
+begin
+	min := 2147483647;
+	for i:=0 to length(liste)-1 do
+		if (liste[i] < min) AND (liste[i] <> 0) then
+			min := liste[i];
+	if min = 2147483647 then
+		min := 0;
+end;
+
+
+function test(): boolean;
+var i: shortInt;
+	s: T_SCORES;
+begin
+	scoreLire('circuits/first.dat', s);
+	for i:=0 to length(s)-1 do
+		writeln(s[i].nom, '/', seconde_to_temps(s[i].temps));
+
+	test := True;
+end;
 
 begin
 end.
