@@ -6,7 +6,7 @@
 unit tools;
  
 interface
-uses sdl, sdl_gfx, sdl_image, sysutils, INSACAR_TYPES;
+uses sdl, sdl_gfx, sdl_image, sdl_ttf, sysutils, INSACAR_TYPES;
 
 function seconde_to_temps(t: LongInt): String;
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
@@ -20,6 +20,10 @@ procedure updatePseudo(k : TSDLKey; var pseudo: String);
 procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
 function min(liste : array of LongInt): LongInt;
 function test(): boolean;
+procedure freeUiElement(var element: P_UI_ELEMENT);
+procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
+procedure getBestScore(var scores: T_SCORES);
+procedure scoreLire(nomFichier: String; var scores: T_SCORES);
 
 implementation
 
@@ -462,17 +466,60 @@ begin
 		min := 0;
 end;
 
+procedure freeUiElement(var element: P_UI_ELEMENT);
+var i: Integer;
+begin
+
+for i:=0 to element^.enfants.taille-1 do
+	freeUiElement(element^.enfants.t[i]);
+
+SDL_FreeSurface(element^.surface);
+TTF_CloseFont(element^.police);
+FreeMem(element, SizeOf(T_UI_ELEMENT));
+end;
+
+
+procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
+//var i: Integer;
+begin
+SDL_FreeSurface(infoPartie.map.base);
+
+//FreeMem(infoPartie.config, sizeOf(T_CONFIG));
+//for i:=0 to infoPartie.joueurs.taille-1 do
+//	SDL_FreeSurface(infoPartie.joueurs.t[i].voiture.surface);
+
+
+end;
+
+
+procedure getBestScore(var scores: T_SCORES);
+var x: T_SCORE;
+	i,j: Integer;
+begin
+	for i:=0 to length(scores)-2 do
+	begin
+		x:=scores[i];
+		j:=i;
+		while (j>0) AND (scores[j-1].temps > x.temps) do
+		begin
+			scores[j] := scores[j-1];
+			j:=j-1;
+		end;
+		scores[j] := x;
+	end;
+end;
 
 function test(): boolean;
-var i: shortInt;
-	s: T_SCORES;
+var s : T_SCORES;
+	i : Integer;
 begin
 	scoreLire('circuits/first.dat', s);
+	getBestScore(s);
+
 	for i:=0 to length(s)-1 do
 		writeln(s[i].nom, '/', seconde_to_temps(s[i].temps));
 
-	test := True;
+	test:=True;
 end;
 
-begin
 end.

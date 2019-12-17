@@ -360,7 +360,8 @@ procedure course_arrivee(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 var actif : Boolean;
 	event_sdl: TSDL_Event;
 	panel : P_UI_ELEMENT;
-	scores : T_SCORES;
+	scores, best : T_SCORES;
+	
 	i: ShortInt;
 begin
 	//Cacher le HUD
@@ -373,6 +374,9 @@ begin
 			scores[i].nom := infoPartie.joueurs.t[i].nom;
 			scores[i].temps := min(infoPartie.joueurs.t[i].temps.tours);
 	end;
+	
+	scoreLire(concat('circuits/',infoPartie.config^.circuit.nom,'.dat'), best);
+	getBestScore(best);
 	
 	//Panneau fin
 	ajouter_enfant(fenetre);
@@ -398,13 +402,17 @@ begin
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
 		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 100;
 		
+
 		//Record circuit
-		ajouter_enfant(panel^);
-		panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-		panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record circuit : ');//////////////////////////////////////////////////////////////////////////////
-		panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
-		panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 150;	
+		if length(best) <> 0 then
+		begin
+			ajouter_enfant(panel^);
+			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record circuit : ', best[0].nom,' ', seconde_to_temps(best[0].temps));
+			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
+			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 150;
+		end;
 		
 		//Texte 'resume course'
 		ajouter_enfant(panel^);
@@ -448,20 +456,10 @@ begin
 			
 			ajouter_enfant(panel^);
 			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := 'Final : ';
+			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := concat('Final : ', seconde_to_temps(infoPartie.joueurs.t[i].temps.tours[1]+infoPartie.joueurs.t[i].temps.tours[2]+infoPartie.joueurs.t[i].temps.tours[3]));
 			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40+300*i;
 			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 520;
-		end;
-				  
-		if infoPartie.joueurs.taille = 1 then
-		begin
-			ajouter_enfant(panel^);
-			panel^.enfants.t[panel^.enfants.taille-1]^.typeE := texte;
-			panel^.enfants.t[panel^.enfants.taille-1]^.valeur := Concat('Record personnel : ');
-			panel^.enfants.t[panel^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panel^.enfants.t[panel^.enfants.taille-1]^.etat.x := 40;
-			panel^.enfants.t[panel^.enfants.taille-1]^.etat.y := 200;	
 		end;
 		
 		ajouter_enfant(panel^);
@@ -1374,7 +1372,8 @@ procedure score(fenetre: T_UI_ELEMENT);
 var panneau: P_UI_ELEMENT; 
 	actif : Boolean;
 	event_sdl: TSDL_Event;
-	i: ShortInt;
+	i,j: ShortInt;
+	best: T_SCORES;
 begin
 	//Couleur fond
 	fenetre.couleur.r:=243;
@@ -1401,6 +1400,8 @@ begin
 		panneau^.etat.y := 75+425*(i DIV 2);
 		panneau^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
 		panneau^.typeE := image;
+		scoreLire(concat('circuits/',intToStr(i+1),'.dat'), best);
+		getBestScore(best);
 			
 			//Nom circuit
 			ajouter_enfant(panneau^);
@@ -1408,31 +1409,19 @@ begin
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 30;
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := 'Circuit : ';
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := concat('Circuit : ',intToStr(i+1));
 			
-			//Premier
-			ajouter_enfant(panneau^);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x :=50;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 100;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := '1er ';
-			
-			//2e
-			ajouter_enfant(panneau^);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x :=50;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 150;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := '2eme ';
-			
-			//3e
-			ajouter_enfant(panneau^);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x :=50;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 200;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := '3eme ';
+			//Meilleurs temps
+			for j:=0 to 2 do
+				if length(best) > j then
+				begin
+					ajouter_enfant(panneau^);
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x :=50;
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 100;
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := concat(intToStr(j+1), 'e : ', best[j].nom, ' ', seconde_to_temps(best[j].temps));
+				end;
 	end;
 	
 	//Rendu
