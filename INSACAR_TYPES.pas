@@ -93,7 +93,7 @@ type
 		end;
 		hud : record 
 			vitesse : P_UI_ELEMENT;
-			secteur: array[0..3] of P_UI_ELEMENT;
+			secteur: array[0..2] of P_UI_ELEMENT;
 		end;
 		temps : record
 			secteur: array[0..3] of LongInt;

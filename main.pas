@@ -795,9 +795,9 @@ var event_sdl: TSDL_Event;
 	champTexte: array[1..2] of P_UI_ELEMENT;
 	panel: array[1..3] of P_UI_ELEMENT;
 	tabSkin : array [0..4] of PSDL_Surface;
-	tabMiniCircuit : array [0..1] of PSDL_Surface;
+	tabMiniCircuit : array [0..4] of PSDL_Surface;
 	
-	tabCircuit : array [0..1] of ansiString;
+	tabCircuit : array [0..4] of ansiString;
   tabMode : array [0..1] of ansiString;
 	
 	actuelMode, actuelCircuit: ShortInt;
@@ -825,8 +825,11 @@ begin
 	tabMode[1] := '1 vs 1';
 
 	//Texte nom circuits
-	tabCircuit[0] := 'first';
-	tabCircuit[1] := 'demo';
+	tabCircuit[0] := '1';
+	tabCircuit[1] := '2';
+	tabCircuit[2] := '3';
+	tabCircuit[3] := '4';
+	tabCircuit[4] := 'demo';
 
 	//chargement images skin
 	tabSkin[0] := IMG_Load('voitures/rouge.png');
@@ -836,8 +839,11 @@ begin
 	tabSkin[4] := IMG_Load('voitures/carreRouge.png');
 	
 	//Chargement images circuits
-	tabMiniCircuit[0] := IMG_Load('circuits/firstmini.png');
-	tabMiniCircuit[1] :=  IMG_Load('circuits/demomini.png');
+	tabMiniCircuit[0] := IMG_Load('circuits/1_mini.png');
+	tabMiniCircuit[1] := IMG_Load('circuits/2_mini.png');
+	tabMiniCircuit[2] := IMG_Load('circuits/3_mini.png');
+	tabMiniCircuit[3] := IMG_Load('circuits/4_mini.png');
+	tabMiniCircuit[4] :=  IMG_Load('circuits/demomini.png');
 	
 	//Couleur de fond
 	fenetre.couleur.r:=243;
