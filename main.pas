@@ -1673,6 +1673,9 @@ begin
 		
 		//Affichage
 		SDL_FLip(fenetre.surface);
+		
+		//Délai
+		SDL_Delay(50);
 	end;
 end;
 
