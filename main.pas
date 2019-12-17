@@ -649,23 +649,35 @@ begin
 		ajouter_physique(physique);
 		infoPartie.joueurs.t[i].voiture.physique := physique.t[physique.taille-1];
         
+        //Placement voitures au départ
         case infoPartie.config^.circuit.nom of 	
-        
-        'first' : 
-        begin
-            infoPartie.joueurs.t[i].voiture.physique^.x := 150+50*i;
-            infoPartie.joueurs.t[i].voiture.physique^.y := 1100+i;
-            infoPartie.joueurs.t[i].voiture.physique^.a := 15;
+            '1' : 
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 150+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1100-12*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 15;
+            end;
+            
+            '2' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 700+i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1030+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 90;
+            end;
+            
+            '3' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 120+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 575+i;
+            end;
+            
+            '4' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 950-10*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1025+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 78;
+            end;
         end;
-        
-        'second' :
-        begin
-            infoPartie.joueurs.t[i].voiture.physique^.x := 700+i;
-            infoPartie.joueurs.t[i].voiture.physique^.y := 1030+50*i;
-            infoPartie.joueurs.t[i].voiture.physique^.a := 90;
-        end;
-        end;
-	
 	end;
 	
 	//Libération memoire config joueurs
@@ -811,10 +823,10 @@ var event_sdl: TSDL_Event;
 	champTexte: array[1..2] of P_UI_ELEMENT;
 	panel: array[1..3] of P_UI_ELEMENT;
 	tabSkin : array [0..4] of PSDL_Surface;
-	tabMiniCircuit : array [0..1] of PSDL_Surface;
+	tabMiniCircuit : array [0..4] of PSDL_Surface;
 	
-	tabCircuit : array [0..1] of ansiString;
-  tabMode : array [0..1] of ansiString;
+	tabCircuit : array [0..4] of ansiString;
+    tabMode : array [0..1] of ansiString;
 	
 	actuelMode, actuelCircuit: ShortInt;
 	actuelSkin: array[0..1] of ShortInt;
@@ -840,9 +852,11 @@ begin
 	tabMode[0] := 'Contre-la-montre'; 
 	tabMode[1] := '1 vs 1';
 
-	//Texte nom circuits
-	tabCircuit[0] := 'first';
-	tabCircuit[1] := 'second';
+	tabCircuit[0] := '1';
+	tabCircuit[1] := '2';
+	tabCircuit[2] := '3';
+	tabCircuit[3] := '4';
+	tabCircuit[4] := 'demo';
 
 	//chargement images skin
 	tabSkin[0] := IMG_Load('voitures/rouge.png');
@@ -852,8 +866,11 @@ begin
 	tabSkin[4] := IMG_Load('voitures/carreRouge.png');
 	
 	//Chargement images circuits
-	tabMiniCircuit[0] := IMG_Load('circuits/firstmini.png');
-	tabMiniCircuit[1] :=  IMG_Load('circuits/secondmini.png');
+	tabMiniCircuit[0] := IMG_Load('circuits/1_mini.png');
+	tabMiniCircuit[1] := IMG_Load('circuits/2_mini.png');
+	tabMiniCircuit[2] := IMG_Load('circuits/3_mini.png');
+	tabMiniCircuit[3] := IMG_Load('circuits/4_mini.png');
+	tabMiniCircuit[4] :=  IMG_Load('circuits/demomini.png');
 	
 	//Couleur de fond
 	fenetre.couleur.r:=243;
