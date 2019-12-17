@@ -648,8 +648,24 @@ begin
 		//Ajout physique
 		ajouter_physique(physique);
 		infoPartie.joueurs.t[i].voiture.physique := physique.t[physique.taille-1];
-		infoPartie.joueurs.t[i].voiture.physique^.x := 150+i;
-		infoPartie.joueurs.t[i].voiture.physique^.y := 1100+i;
+        
+        case infoPartie.config^.circuit.nom of 	
+        
+        'first' : 
+        begin
+            infoPartie.joueurs.t[i].voiture.physique^.x := 150+50*i;
+            infoPartie.joueurs.t[i].voiture.physique^.y := 1100+i;
+            infoPartie.joueurs.t[i].voiture.physique^.a := 15;
+        end;
+        
+        'second' :
+        begin
+            infoPartie.joueurs.t[i].voiture.physique^.x := 700+i;
+            infoPartie.joueurs.t[i].voiture.physique^.y := 1030+50*i;
+            infoPartie.joueurs.t[i].voiture.physique^.a := 90;
+        end;
+        end;
+	
 	end;
 	
 	//Libération memoire config joueurs
@@ -826,7 +842,7 @@ begin
 
 	//Texte nom circuits
 	tabCircuit[0] := 'first';
-	tabCircuit[1] := 'demo';
+	tabCircuit[1] := 'second';
 
 	//chargement images skin
 	tabSkin[0] := IMG_Load('voitures/rouge.png');
@@ -837,7 +853,7 @@ begin
 	
 	//Chargement images circuits
 	tabMiniCircuit[0] := IMG_Load('circuits/firstmini.png');
-	tabMiniCircuit[1] :=  IMG_Load('circuits/demomini.png');
+	tabMiniCircuit[1] :=  IMG_Load('circuits/secondmini.png');
 	
 	//Couleur de fond
 	fenetre.couleur.r:=243;
