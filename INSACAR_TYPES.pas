@@ -79,6 +79,8 @@ type
 			t: ^T_JOUEUR; //PARTIE
 			taille: Integer;
 		end;
+		actif : boolean;
+		premier: shortInt;
 	end;
 	
 	T_JOUEUR = record
@@ -92,10 +94,10 @@ type
 		hud : record 
 			vitesse : P_UI_ELEMENT;
 			secteur: array[0..3] of P_UI_ELEMENT;
-			temps_tour: P_UI_ELEMENT;
 		end;
 		temps : record
 			secteur: array[0..3] of LongInt;
+			tours: array[1..3] of LongInt;
 			actuel: ShortInt;
 		end;
 		nbTour: Integer;
