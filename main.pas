@@ -648,6 +648,36 @@ begin
 		infoPartie.joueurs.t[i].voiture.physique := physique.t[physique.taille-1];
 		infoPartie.joueurs.t[i].voiture.physique^.x := 150+i;
 		infoPartie.joueurs.t[i].voiture.physique^.y := 1100+i;
+       
+        //Placement voitures au départ
+        case infoPartie.config^.circuit.nom of 	
+            '1' : 
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 150+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1100-12*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 15;
+            end;
+            
+            '2' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 700+i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1030+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 90;
+            end;
+            
+            '3' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 120+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 575+i;
+            end;
+            
+            '4' :
+            begin
+                infoPartie.joueurs.t[i].voiture.physique^.x := 950-10*i;
+                infoPartie.joueurs.t[i].voiture.physique^.y := 1025+50*i;
+                infoPartie.joueurs.t[i].voiture.physique^.a := 78;
+            end;
+        end;
 	end;
 	
 	//Libération memoire config joueurs
@@ -1412,12 +1442,12 @@ begin
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := concat('Circuit : ',intToStr(i+1));
 			
 			//Meilleurs temps
-			for j:=0 to 2 do
+			for j:=0 to 4 do
 				if length(best) > j then
 				begin
 					ajouter_enfant(panneau^);
 					panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x :=50;
-					panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 100;
+					panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 100+40*j;
 					panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
 					panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_OpenFont('arial.ttf',25);
 					panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := concat(intToStr(j+1), 'e : ', best[j].nom, ' ', seconde_to_temps(best[j].temps));
