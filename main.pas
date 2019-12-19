@@ -6,7 +6,7 @@
 program demo;
 
 
-uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils, strutils, tools, crt;
+uses sdl, sdl_ttf, sdl_image, sdl_gfx, INSACAR_TYPES, sysutils, tools, crt;
 
 const
 	C_UI_FENETRE_NOM = 'InsaCar Alpha 2.0';
@@ -18,7 +18,6 @@ const
 	
 	//Physique
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR = 0.2; // kg.s^(-1)
-	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_EAU = 0.1; // kg.s^(-1)
 	C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE = 5; // kg.s^(-1)
 	
 	C_PHYSIQUE_VOITURE_ACCELERATION_AVANT = 5.6; // m.s^(-2)
@@ -86,7 +85,7 @@ begin
 	frame_afficher_low(element,element.surface,etat);
 end;
 
-procedure afficher_hud(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
+procedure afficher_hud(var infoPartie: T_GAMEPLAY);
 var i: ShortInt;
 begin
 	//Temps géneral
@@ -173,7 +172,7 @@ begin
 	for i:=0 to infoPartie.joueurs.taille-1 do
 	begin
 		//Libération surface
-		SDL_freeSurface(infoPartie.joueurs.t[i].voiture.ui^.surface);
+		SDL_FreeSurface(infoPartie.joueurs.t[i].voiture.ui^.surface);
 		
 		//Nouvelle surface
 		infoPartie.joueurs.t[i].voiture.ui^.surface := rotozoomSurface(infoPartie.joueurs.t[i].voiture.surface, infoPartie.joueurs.t[i].voiture.physique^.a, infoPartie.zoom, 1);
@@ -184,16 +183,16 @@ begin
 	end;
 end;
 
-procedure course_afficher(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);
+procedure course_afficher(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
 begin
 	//Affichage caméra (circuit+voitures)
 	afficher_camera(infoPartie, fenetre);
 	
 	//Affichage HUD (Informations)
-	afficher_hud(infoPartie, fenetre);
+	afficher_hud(infoPartie);
 end;
 
-procedure course_gameplay(var infoPartie: T_GAMEPLAY; var circuit: PSDL_Surface);
+procedure course_gameplay(var infoPartie: T_GAMEPLAY);
 var c: array of TSDL_Color;
 	p: SDL_Rect;
 	hit: T_HITBOX_COLOR;
@@ -375,6 +374,7 @@ begin
 			scores[i].temps := min(infoPartie.joueurs.t[i].temps.tours);
 	end;
 	
+	setLength(best, 0);
 	scoreLire(concat('circuits/',infoPartie.config^.circuit.nom,'.dat'), best);
 	getBestScore(best);
 	
@@ -486,7 +486,7 @@ begin
 		SDL_Delay(50);
 	end;
 
-
+	//Mise a jour score
 	scoreMaj(concat('circuits/',infoPartie.config^.circuit.nom, '.dat'), scores);
 end;
 
@@ -518,10 +518,12 @@ begin
 		//Délai
 		Sleep(1000);
 		SDL_FreeSurface(fenetre.enfants.t[fenetre.enfants.taille-1]^.surface);
+		fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := NIL;
 	end;
 	
-	//Cacher feu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	fenetre.enfants.t[fenetre.enfants.taille-1]^.style.display := False;
+	//Supprimer feu
+	freeUiElement(fenetre.enfants.t[fenetre.enfants.taille-1]^);
+	fenetre.enfants.taille := fenetre.enfants.taille-1;
 	
 	//Afficher HUD
 	infoPartie.hud.global^.style.display := True;
@@ -529,9 +531,10 @@ begin
 	//Démarage temps
 	infoPartie.temps.debut := SDL_GetTicks();
 	infoPartie.temps.last := infoPartie.temps.debut;
+	
 end;
 
-procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; fenetre: T_UI_ELEMENT);{Main Loop}
+procedure partie_course(var infoPartie: T_GAMEPLAY; var physique: T_PHYSIQUE_TABLEAU; var fenetre: T_UI_ELEMENT);{Main Loop}
 var	timer: array[0..7] of LongInt; {départ, boucle, delay,user,physique,gameplay,courseAfficher,frameAfficher}
 	x,y: tcrtcoord;
 begin
@@ -555,10 +558,10 @@ begin
 		frame_physique(physique, infoPartie);
 
 		//Evenements gameplay
-		course_gameplay(infoPartie, fenetre.enfants.t[0]^.surface);
+		course_gameplay(infoPartie);
 
 		//Affichage
-		course_afficher(infoPartie, physique, fenetre);
+		course_afficher(infoPartie, fenetre);
 
 		//Rendu
 		frame_afficher(fenetre);
@@ -630,6 +633,9 @@ begin
 		//Initialisation
 		for j:=1 to 3 do
 			infoPartie.joueurs.t[i].temps.tours[j]:=0;
+		for j:=0 to 4 do
+			infoPartie.joueurs.t[i].temps.secteur[j]:=0;
+		
 		infoPartie.joueurs.t[i].temps.actuel := 0;
 		infoPartie.joueurs.t[i].nbTour := 1;
 		
@@ -640,6 +646,7 @@ begin
 		//Ajout UI
 		ajouter_enfant(fenetre);
 		infoPartie.joueurs.t[i].voiture.ui := fenetre.enfants.t[fenetre.enfants.taille-1];
+		infoPartie.joueurs.t[i].voiture.ui^.surface := NIL;
 		infoPartie.joueurs.t[i].voiture.ui^.typeE := image;
 		imageLoad(infoPartie.joueurs.t[i].voiture.chemin, infoPartie.joueurs.t[i].voiture.surface, True);
 		
@@ -806,16 +813,27 @@ begin
 					infoPartie.joueurs.t[i].hud.secteur[j]^.etat.x := 5;
 					infoPartie.joueurs.t[i].hud.secteur[j]^.etat.y := 90+30*j;
 				end;
-		end;		
+		end;
 end;
 
-procedure jeu_partie(var config: T_CONFIG; fenetre: T_UI_ELEMENT);
+procedure jeu_partie(config: T_CONFIG; fenetre: T_UI_ELEMENT);
 var physique : T_PHYSIQUE_TABLEAU;
 	infoPartie: T_GAMEPLAY;
 begin
+	//On sauvegarde la configuration
 	infoPartie.config := @config;
+	
+	//Initialisation
 	partie_init(infoPartie, physique, fenetre);
+	
+	//Partie
 	partie_course(infoPartie, physique, fenetre);
+	
+	//Libération surface
+	freeUiElement(fenetre);
+	
+	//Libération infoPartie
+	freeInfoPartie(infoPartie);
 end;
 
 procedure jeu_menu(fenetre: T_UI_ELEMENT);
@@ -838,6 +856,7 @@ var event_sdl: TSDL_Event;
 	actif: Boolean;
 	i,j: ShortInt;
 begin
+
 	//Initialisation
 	pseudo[0] := ''; //Pseudo J1
 	pseudo[1] := ''; //Pseudo J2
@@ -871,7 +890,7 @@ begin
 	tabMiniCircuit[1] := IMG_Load('circuits/2_mini.png');
 	tabMiniCircuit[2] := IMG_Load('circuits/3_mini.png');
 	tabMiniCircuit[3] := IMG_Load('circuits/4_mini.png');
-	tabMiniCircuit[4] :=  IMG_Load('circuits/demomini.png');
+	tabMiniCircuit[4] := IMG_Load('circuits/demomini.png');
 	
 	//Couleur de fond
 	fenetre.couleur.r:=243;
@@ -1279,9 +1298,28 @@ begin
 		
 		if timer[2] < 0 then
 			timer[2]:=0;
-			
+		
 		SDL_Delay(timer[2]);
 	end;
+	
+	//Délie le miniCircuit
+	fenetre.enfants.t[fenetre.enfants.taille-4]^.surface := NIL;
+	
+	//Délie le skin J1/J2
+	for i:=0 to 1 do
+		panel[2+i]^.enfants.t[panel[2+i]^.enfants.taille-4]^.surface := NIL;
+		
+	//Libération images skins
+	for i:=0 to 4 do
+		SDL_FreeSurface(tabSkin[i]);
+	
+	//Libération images circuits
+	for i:=0 to 4 do
+		SDL_FreeSurface(tabMiniCircuit[i]);
+
+	
+	//Libération surfaces
+	freeUiElement(fenetre);
 end;
 
 procedure tutoriel(fenetre: T_UI_ELEMENT);
@@ -1289,15 +1327,11 @@ var event_sdl : TSDL_Event;
 	texteTutoriel: array [0..1] of array of String;
 	panneau: P_UI_ELEMENT;
 	texteElement: P_UI_ELEMENT;
-	arial : PTTF_Font;	
 	fichier : Text ;
 	actif : Boolean;
 	ligne: String;
 	i,j: Integer;
 begin
-	//Police
-	arial := TTF_Openfont('arial.ttf',20);
-	
 	//Couleur fond
 	fenetre.couleur.r:=243;
 	fenetre.couleur.g:=243;
@@ -1360,7 +1394,7 @@ begin
 			//Affichage texte
 			ajouter_enfant(panneau^);
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.typeE := texte;
-			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := arial;
+			panneau^.enfants.t[panneau^.enfants.taille-1]^.police := TTF_Openfont('arial.ttf',20);
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.valeur := texteTutoriel[i][j];
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.x := 50;
 			panneau^.enfants.t[panneau^.enfants.taille-1]^.etat.y := 50+50*j;
@@ -1396,6 +1430,9 @@ begin
 		//Délai
 		SDL_Delay(50);
 	end;
+	
+	//Libération surfaces
+	freeUiElement(fenetre);
 end;
 
 procedure score(fenetre: T_UI_ELEMENT);
@@ -1428,8 +1465,13 @@ begin
 		panneau := fenetre.enfants.t[fenetre.enfants.taille-1];
 		panneau^.etat.x := 150+750*(i MOD 2);
 		panneau^.etat.y := 75+425*(i DIV 2);
-		panneau^.surface := IMG_Load('jeu_menu/grey_panel.png'); 
+		panneau^.surface := IMG_Load('jeu_menu/grey_panel.png');
 		panneau^.typeE := image;
+		
+		//Initialisation
+		setLength(best, 0);
+		
+		//Lecture score et tri
 		scoreLire(concat('circuits/',intToStr(i+1),'.dat'), best);
 		getBestScore(best);
 			
@@ -1471,6 +1513,9 @@ begin
 		//Délai
 		SDL_Delay(50);
 	end;
+	
+	//Libération surfaces
+	freeUiElement(fenetre);
 end;
 
 procedure menu(var fenetre: T_UI_ELEMENT);
@@ -1652,12 +1697,13 @@ begin
 			//Initialisation
 			lancement.etat.x:=0;
 			lancement.etat.y:=0;
+			lancement.valeur:='main';
 			lancement.enfants.t:=NIL;
 			lancement.enfants.taille:=0;
 			lancement.parent:=NIL;
 		end else
 			//Erreur création fenêtre
-			writeln('Erreur setVideoMode'); 
+			writeln('Erreur setVideoMode');
 	end	else
 		//Erreur initialisation SDL
 		writeln('Erreur Initialisation');
@@ -1669,6 +1715,9 @@ begin
 	fenetre := lancement();
 	//Lancement Menu
 	menu(fenetre);
+	
+	//Libération mémoire
+	freeUiElement(fenetre);
 	
 	//Déchargement librairie TTF
 	TTF_Quit();

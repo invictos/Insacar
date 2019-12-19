@@ -6,7 +6,7 @@
 unit tools;
  
 interface
-uses sdl, sdl_gfx, sdl_image, sdl_ttf, sysutils, INSACAR_TYPES;
+uses sdl, sdl_image, sdl_ttf, sysutils, INSACAR_TYPES;
 
 function seconde_to_temps(t: LongInt): String;
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
@@ -20,7 +20,7 @@ procedure updatePseudo(k : TSDLKey; var pseudo: String);
 procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
 function min(liste : array of LongInt): LongInt;
 function test(): boolean;
-procedure freeUiElement(var element: P_UI_ELEMENT);
+procedure freeUiElement(var element: T_UI_ELEMENT);
 procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
 procedure getBestScore(var scores: T_SCORES);
 procedure scoreLire(nomFichier: String; var scores: T_SCORES);
@@ -416,6 +416,7 @@ var scores: T_SCORES;
 	i,j, nbDone:shortInt;
 	done: array of boolean;
 begin
+	setLength(scores, 0);
 	scoreLire(fichier, scores);
 
 	setLength(done, length(miseAJour));
@@ -466,32 +467,6 @@ begin
 		min := 0;
 end;
 
-procedure freeUiElement(var element: P_UI_ELEMENT);
-var i: Integer;
-begin
-
-for i:=0 to element^.enfants.taille-1 do
-	freeUiElement(element^.enfants.t[i]);
-
-SDL_FreeSurface(element^.surface);
-TTF_CloseFont(element^.police);
-FreeMem(element, SizeOf(T_UI_ELEMENT));
-end;
-
-
-procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
-//var i: Integer;
-begin
-SDL_FreeSurface(infoPartie.map.base);
-
-//FreeMem(infoPartie.config, sizeOf(T_CONFIG));
-//for i:=0 to infoPartie.joueurs.taille-1 do
-//	SDL_FreeSurface(infoPartie.joueurs.t[i].voiture.surface);
-
-
-end;
-
-
 procedure getBestScore(var scores: T_SCORES);
 var x: T_SCORE;
 	i,j: Integer;
@@ -513,6 +488,7 @@ function test(): boolean;
 var s : T_SCORES;
 	i : Integer;
 begin
+	setLength(s, 0);
 	scoreLire('circuits/first.dat', s);
 	getBestScore(s);
 
@@ -520,6 +496,45 @@ begin
 		writeln(s[i].nom, '/', seconde_to_temps(s[i].temps));
 
 	test:=True;
+end;
+
+procedure freeUiElement(var element: T_UI_ELEMENT);
+var i: Integer;
+begin
+	//Libération des enfants
+	for i:=0 to element.enfants.taille-1 do
+		freeUiElement(element.enfants.t[i]^);
+	
+	//Taille enfants
+	element.enfants.taille := 0;
+
+	//Libération surface
+	if element.surface <> NIL then
+		SDL_FreeSurface(element.surface);
+
+	//Libération police
+	if element.typeE = texte then
+		TTF_CloseFont(element.police);
+
+	//Libération élément
+	if element.valeur <> 'main' then
+		FreeMem(@element, SizeOf(T_UI_ELEMENT));
+end;
+
+
+procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
+var i: Integer;
+begin
+	//Map
+	SDL_FreeSurface(infoPartie.map.base);
+
+	//Skin joueurs
+	for i:=0 to infoPartie.joueurs.taille-1 do
+		SDL_FreeSurface(infoPartie.joueurs.t[i].voiture.surface);
+	
+	//joueurs
+	Freemem(infoPartie.joueurs.t, infoPartie.joueurs.taille*SizeOf(T_JOUEUR));
+
 end;
 
 end.
