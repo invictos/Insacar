@@ -9,14 +9,9 @@ interface
 uses sdl, sdl_ttf;
 
 type
-	T_RENDER_ETAT = record
-		rect: TSDL_Rect;
-		a: Byte;
-	end;
 	T_RENDER_STYLE = record
 		enabled, display: Boolean;
 		a : Byte;
-		zoom: Real;
 	end;
 	
 	T_HITBOX_COLOR = record
@@ -34,7 +29,7 @@ type
 	
 	T_PHYSIQUE_ELEMENT = record
 		x,y: Real;
-		dx,dy,a,da,r,dr: Real;
+		dx,dy,a,r,dr: Real;
 	end;
 	P_PHYSIQUE_ELEMENT = ^T_PHYSIQUE_ELEMENT;
 	

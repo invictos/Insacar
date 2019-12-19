@@ -19,7 +19,6 @@ procedure imageLoad(chemin: String; var surface: PSDL_Surface; alpha: Boolean);
 procedure updatePseudo(k : TSDLKey; var pseudo: String);
 procedure scoreMaj(fichier: String; miseAJour: T_SCORES);
 function min(liste : array of LongInt): LongInt;
-function test(): boolean;
 procedure freeUiElement(var element: T_UI_ELEMENT);
 procedure freeInfoPartie(var infoPartie: T_GAMEPLAY);
 procedure getBestScore(var scores: T_SCORES);
@@ -29,7 +28,7 @@ implementation
 
 function seconde_to_temps(t: LongInt): String;
 var m,s,ms: Integer;
-	tm, ts: String;
+	tm, ts, tms: String;
 begin
 	//Minutes
 	m:= t DIV 60000;
@@ -50,8 +49,15 @@ begin
 	else
 		ts := intToStr(s);
 		
+	if ms < 100 then
+		if ms<10 then
+			tms := concat('00', intToStr(ms))
+		else
+			tms := concat('0', intToStr(ms))
+	else
+		tms := intToStr(ms);
 	//Texte
-	seconde_to_temps := concat(tm, '.', ts, '.', intToStr(ms));
+	seconde_to_temps := concat(tm, '.', ts, '.', tms);
 end;
 
 procedure ajouter_physique(var physique: T_PHYSIQUE_TABLEAU);
@@ -79,7 +85,6 @@ begin
 	physique.t[physique.taille]^.dx := 0;
 	physique.t[physique.taille]^.dy := 0;
 	physique.t[physique.taille]^.a := 0;
-	physique.t[physique.taille]^.da := 0;
 	physique.t[physique.taille]^.r := 0;
 	physique.t[physique.taille]^.dr :=0;
 	
@@ -471,7 +476,7 @@ procedure getBestScore(var scores: T_SCORES);
 var x: T_SCORE;
 	i,j: Integer;
 begin
-	for i:=0 to length(scores)-2 do
+	for i:=0 to length(scores)-1 do
 	begin
 		x:=scores[i];
 		j:=i;
@@ -482,20 +487,6 @@ begin
 		end;
 		scores[j] := x;
 	end;
-end;
-
-function test(): boolean;
-var s : T_SCORES;
-	i : Integer;
-begin
-	setLength(s, 0);
-	scoreLire('circuits/first.dat', s);
-	getBestScore(s);
-
-	for i:=0 to length(s)-1 do
-		writeln(s[i].nom, '/', seconde_to_temps(s[i].temps));
-
-	test:=True;
 end;
 
 procedure freeUiElement(var element: T_UI_ELEMENT);
