@@ -58,8 +58,7 @@ type
 	
 	T_GAMEPLAY = record
 		temps: record
-			debut: Integer;
-			fin: Integer;
+			debut: LongInt;
 			last: LongInt;
 			dt: Double;
 		end;

@@ -228,7 +228,7 @@ begin
 		//Utilisation collisions
 		for j:=0 to hit.taille-1 do
 			//Hit ligne secteur actuel + 1
-			if (hit.data[j].n=1) AND isSameColor(c[infoPartie.joueurs.t[i].temps.actuel MOD 3],hit.data[j].c) then
+			if {(hit.data[j].n=1) AND} isSameColor(c[infoPartie.joueurs.t[i].temps.actuel MOD 3],hit.data[j].c) then
 			begin
 				if infoPartie.joueurs.t[i].temps.actuel = 3 then
 				begin
@@ -241,10 +241,15 @@ begin
 				//Incrémentation secteur courant
 				infoPartie.joueurs.t[i].temps.actuel := (infoPartie.joueurs.t[i].temps.actuel MOD 3) + 1;
 			end;
+			
+			if infoPartie.config^.nbTour = infoPartie.joueurs.t[i].nbTour-1 then
+			begin
+				infoPartie.actif := False;
+				writeln('QUITTER NBTOUR');
+			end;
 	end;
 	
-	if infoPartie.config^.nbTour = infoPartie.joueurs.t[0].nbTour-1 then
-		infoPartie.actif := False;
+
 end;
 
 procedure frame_physique(var physique: T_PHYSIQUE_TABLEAU; var infoPartie: T_GAMEPLAY);
@@ -292,7 +297,10 @@ begin
 	//Vérification fermeture fenêtre
 	SDL_PollEvent(@event_sdl);
 	if event_sdl.type_=SDL_QUITEV then
+	begin
 		infoPartie.actif:=False;
+		writeln('QUITTER CROIX');
+	end;
 	
 	//Etat clavier
 	event_clavier := SDL_GetKeyState(NIL);
@@ -351,8 +359,10 @@ begin
 	end;
 	
 	if event_clavier[SDLK_H] = SDL_PRESSED then
+	begin
 		infoPartie.actif := False;
-		
+		writeln('QUITTER H');
+	end;
 end;
 
 procedure course_arrivee(var infoPartie: T_GAMEPLAY; var fenetre: T_UI_ELEMENT);
@@ -478,7 +488,7 @@ begin
 	begin
 		while SDL_PollEvent(@event_sdl) = 1 do
 			if (event_sdl.type_ = SDL_QUITEV)
-				OR (event_sdl.key.keysym.sym = 13)
+				OR ((event_sdl.type_ = SDL_KEYDOWN) AND (event_sdl.key.keysym.sym = 13))
 				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(panel^.enfants.t[panel^.enfants.taille-1]^, event_sdl.motion.x, event_sdl.motion.y)) then
 				actif := False; //Quitter
 		
@@ -551,27 +561,28 @@ begin
 		//Nouveau temps
 		infoPartie.temps.last := SDL_GetTicks();
 		
+		writeln('NEW ', infoPartie.temps.dt);
 		//Intéraction utilisateur
 		course_user(infoPartie);
-
+write('1');
 		//Mouvements physique
 		frame_physique(physique, infoPartie);
-
+write('2');
 		//Evenements gameplay
 		course_gameplay(infoPartie);
-
+write('3');
 		//Affichage
 		course_afficher(infoPartie, fenetre);
-
+write('4');
 		//Rendu
 		frame_afficher(fenetre);
-
+write('5');
 		//Mise a jour écran
 		SDL_Flip(fenetre.surface);
-		
+write('6');		
 		//Calcul temps éxecution
 		timer[0] := SDL_GetTicks() - infoPartie.temps.last;
-		
+write('7');		
 		//Calcul délai
 		timer[1] := Round(1000/C_REFRESHRATE)-timer[0];
 		if timer[1] < 0 then
@@ -600,7 +611,6 @@ var i,j: Integer;
 begin
 	//Initialisation
 	infoPartie.temps.debut:=0;
-	infoPartie.temps.fin:=0;
 	infoPartie.temps.last:=0;
 	infoPartie.temps.dt:=0;
 	infoPartie.zoom:=1.000001;
@@ -1423,7 +1433,7 @@ begin
 	begin
 		while SDL_PollEvent(@event_sdl) = 1 do
 			if (event_sdl.type_ = SDL_QUITEV)
-				OR (event_sdl.key.keysym.sym = 13)
+				OR ((event_sdl.type_ = SDL_KEYDOWN) AND (event_sdl.key.keysym.sym = 13))
 				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(fenetre.enfants.t[fenetre.enfants.taille-3]^, event_sdl.motion.x, event_sdl.motion.y)) then
 				actif := False; //Quitter
 		
@@ -1505,11 +1515,16 @@ begin
 	while actif do
 	begin
 		while SDL_PollEvent(@event_sdl) = 1 do
+		begin
+			writeln( 'Mouse button pressed : Button index : ',event_sdl.button.button);
 			if (event_sdl.type_ = SDL_QUITEV)
-				OR (event_sdl.key.keysym.sym = 13)
+				OR ((event_sdl.type_ = SDL_KEYDOWN) AND (event_sdl.key.keysym.sym = 13))
 				OR ((event_sdl.type_ = SDL_MOUSEBUTTONDOWN)	AND isInElement(fenetre.enfants.t[fenetre.enfants.taille-5]^, event_sdl.motion.x, event_sdl.motion.y)) then
-				actif := False; //Quitter
-		
+				begin
+					actif := False; //Quitter
+					writeln('QUITTER');
+				end;
+		end;
 		//Délai
 		SDL_Delay(50);
 	end;
