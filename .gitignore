@@ -4,3 +4,5 @@ INSACAR_TYPES.ppu
 main.exe
 main.o
 main
+tools.ppu
+tools.o

@@ -25,7 +25,7 @@ const
 	C_PHYSIQUE_VOITURE_ACCELERATION_FREIN = 12;// m.s^(-2)
 	C_PHYSIQUE_VOITURE_ANGLE = 90; // Deg.s^(-1)
 
-procedure frame_afficher_low(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: SDL_Rect);
+procedure frame_afficher_low(var element: T_UI_ELEMENT; var frame: PSDL_Surface; etat: T_RENDER_ETAT);
 var i : Integer;
 		s : ansiString;
 begin
@@ -56,15 +56,15 @@ begin
 	end;
 
 	//Calcul position
-	etat.x:=etat.x+element.etat.x;
-	etat.y:=etat.y+element.etat.y;
+	etat.rect.x:=etat.rect.x+element.etat.x;
+	etat.rect.y:=etat.rect.y+element.etat.y;
 
 	//Rendu SDL
-	SDL_BlitSurface(element.surface, NIL, frame, @etat);
+	SDL_BlitSurface(element.surface, NIL, frame, @etat.rect);
 	
 	//PostRendu (curseur)
 	if (element.typeE = texte) AND (element.enfants.taille <> 0) AND (element.surface <> NIL) then
-		etat.x:=etat.x + element.surface^.w;
+		etat.rect.x:=etat.rect.x + element.surface^.w;
 	
 	//Rendu enfants
 	for i:=0 to element.enfants.taille-1 do
@@ -74,11 +74,13 @@ begin
 end;
 
 procedure frame_afficher(var element: T_UI_ELEMENT);
-var etat: SDL_Rect;
+var etat: T_RENDER_ETAT;
 begin
 	//Initialisation
-	etat.x:=0;
-	etat.y:=0;
+	etat.rect.x:=0;
+	etat.rect.y:=0;
+	etat.a:=255;
+	
 	//Lancement fonction récursive
 	frame_afficher_low(element,element.surface,etat);
 end;
@@ -226,7 +228,7 @@ begin
 		//Utilisation collisions
 		for j:=0 to hit.taille-1 do
 			//Hit ligne secteur actuel + 1
-			if isSameColor(c[infoPartie.joueurs.t[i].temps.actuel MOD 3],hit.data[j].c) then
+			if {(hit.data[j].n=1) AND} isSameColor(c[infoPartie.joueurs.t[i].temps.actuel MOD 3],hit.data[j].c) then
 			begin
 				if infoPartie.joueurs.t[i].temps.actuel = 3 then
 				begin
@@ -243,6 +245,7 @@ begin
 			if infoPartie.config^.nbTour = infoPartie.joueurs.t[i].nbTour-1 then
 			begin
 				infoPartie.actif := False;
+				writeln('QUITTER NBTOUR');
 			end;
 	end;
 	
@@ -262,7 +265,7 @@ begin
 	c[0].b:=74;
 	
 	//Joueurs J1/J2
-	for i:=0 to infoPartie.joueurs.taille-1 do
+	for i:=0 to physique.taille-1 do
 	begin
 		//Coordonnées joueur
 		p.x := Round(infoPartie.joueurs.t[i].voiture.physique^.x);
@@ -276,15 +279,11 @@ begin
 		//Calcul frottements
 
 		if hb.taille<>0 then
-			infoPartie.joueurs.t[i].voiture.physique^.dr:=infoPartie.joueurs.t[i].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*infoPartie.joueurs.t[i].voiture.physique^.dr
+			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_TERRE*physique.t[i]^.dr
 		else
 
-			infoPartie.joueurs.t[i].voiture.physique^.dr:=infoPartie.joueurs.t[i].voiture.physique^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*infoPartie.joueurs.t[i].voiture.physique^.dr;
+			physique.t[i]^.dr:=physique.t[i]^.dr - infoPartie.temps.dt*C_PHYSIQUE_FROTTEMENT_COEFFICIENT_AIR*physique.t[i]^.dr;
 		
-	end;
-	
-	for i:=0 to physique.taille-1 do
-	begin
 		//Calcul positions
 		physique.t[i]^.x:=physique.t[i]^.x + infoPartie.temps.dt*sin(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
 		physique.t[i]^.y:=physique.t[i]^.y + infoPartie.temps.dt*cos(3.141592/180*physique.t[i]^.a)*physique.t[i]^.dr;
@@ -297,13 +296,11 @@ var event_sdl: TSDL_Event;
 begin
 	//Vérification fermeture fenêtre
 	SDL_PollEvent(@event_sdl);
-
-	if event_sdl.type_ = SDL_QUITEV then
+	if event_sdl.type_=SDL_QUITEV then
 	begin
 		infoPartie.actif:=False;
-		writeln('Demo exit');
+		writeln('QUITTER CROIX');
 	end;
-
 	
 	//Etat clavier
 	event_clavier := SDL_GetKeyState(NIL);
@@ -361,7 +358,7 @@ begin
 			infoPartie.joueurs.t[1].voiture.physique^.a := infoPartie.joueurs.t[1].voiture.physique^.a - infoPartie.temps.dt*C_PHYSIQUE_VOITURE_ANGLE;
 	end;
 	
-	if event_clavier[SDLK_P] = SDL_PRESSED then
+	if event_clavier[SDLK_H] = SDL_PRESSED then
 	begin
 		infoPartie.actif := False;
 		writeln('QUITTER H');
@@ -564,27 +561,28 @@ begin
 		//Nouveau temps
 		infoPartie.temps.last := SDL_GetTicks();
 		
-		//Interaction utilisateur
+		writeln('NEW ', infoPartie.temps.dt);
+		//Intéraction utilisateur
 		course_user(infoPartie);
-
+write('1');
 		//Mouvements physique
 		frame_physique(physique, infoPartie);
-
+write('2');
 		//Evenements gameplay
 		course_gameplay(infoPartie);
-
+write('3');
 		//Affichage
 		course_afficher(infoPartie, fenetre);
-
+write('4');
 		//Rendu
 		frame_afficher(fenetre);
-
+write('5');
 		//Mise a jour écran
 		SDL_Flip(fenetre.surface);
-
+write('6');		
 		//Calcul temps éxecution
 		timer[0] := SDL_GetTicks() - infoPartie.temps.last;
-
+write('7');		
 		//Calcul délai
 		timer[1] := Round(1000/C_REFRESHRATE)-timer[0];
 		if timer[1] < 0 then
@@ -849,13 +847,14 @@ begin
 end;
 
 procedure jeu_menu(fenetre: T_UI_ELEMENT);
-	var event_sdl: TSDL_Event;
+var event_sdl: TSDL_Event;
 	champTexte: array[1..2] of P_UI_ELEMENT;
 	panel: array[1..3] of P_UI_ELEMENT;
 	tabSkin : array [0..4] of PSDL_Surface;
 	tabMiniCircuit : array [0..4] of PSDL_Surface;
+	
 	tabCircuit : array [0..4] of ansiString;
-	tabMode : array [0..1] of ansiString;
+  tabMode : array [0..1] of ansiString;
 	
 	actuelMode, actuelCircuit: ShortInt;
 	actuelSkin: array[0..1] of ShortInt;
@@ -902,7 +901,8 @@ begin
 	tabMiniCircuit[2] := IMG_Load('circuits/3_mini.png');
 	tabMiniCircuit[3] := IMG_Load('circuits/4_mini.png');
 	tabMiniCircuit[4] := IMG_Load('circuits/demomini.png');
-
+	
+	//Couleur de fond
 	fenetre.couleur.r:=243;
 	fenetre.couleur.g:=243;
 	fenetre.couleur.b:=215;
@@ -1574,6 +1574,7 @@ begin
 		fenetre.enfants.t[fenetre.enfants.taille-1]^.surface := boutons[i][0];
 		fenetre.enfants.t[fenetre.enfants.taille-1]^.typeE := image;
 	end;
+	
 	//Boucle affichage
 	actif := True;
 	while actif do
@@ -1651,7 +1652,7 @@ begin
 						
 						//Affichage
 						SDL_FLip(fenetre.surface);
-
+						
 						//Délai puis tutoriel
 						Sleep(300);
 						tutoriel(fenetre);
@@ -1739,4 +1740,3 @@ begin
 	//Déchargement librairie SDL
 	SDL_Quit();
 end.
-
