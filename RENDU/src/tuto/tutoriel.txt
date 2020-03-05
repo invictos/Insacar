@@ -1,0 +1,13 @@
+Bonjour,
+Les contrôles de ce jeu sont assez simples
+Pour accelerer appuyez sur A :
+Pour ralentir/reculer appuyez sur TAB :
+Pour tourner à gauche, appuyez sur R :
+Pour tourner à droite, appuyez sur Y :
+
+Si il y a un deuxieme joueur,
+Ses contrôles sont les suivants :
+Pour accelerer appuyez sur ctrl (droite) :
+Pour ralentir/reculer appuyez sur menu  :
+Pour tourner à gauche, appuyez sur 1 (pavé) :
+Pour tourner à droite, appuyez sur 3 (pavé) :
